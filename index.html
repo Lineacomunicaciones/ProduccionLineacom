@@ -564,7 +564,48 @@ body {
 .filter-group select { appearance:none; background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%238899bb'/%3E%3C/svg%3E"); background-repeat:no-repeat; background-position:right 10px center; padding-right:28px; }
 .val-currency { font-family:'JetBrains Mono',monospace; font-size:11px; color:var(--txt-secondary); }
 
-/* ── RESPONSIVE ── */
+/* ── PROJ FINANCE CARDS ── */
+.proj-finance-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+  margin-bottom: 20px;
+}
+.proj-finance-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 20px 22px 18px;
+  position: relative;
+  overflow: hidden;
+  transition: var(--transition);
+  animation: fadeUp .4s ease both;
+}
+.proj-finance-card:hover { border-color: var(--border-mid); transform: translateY(-2px); box-shadow: var(--shadow); }
+.proj-finance-card::before {
+  content: '';
+  position: absolute; top:0; left:0; right:0; height:3px;
+  background: var(--pfc-clr, var(--brand-lime));
+}
+.proj-finance-card::after {
+  content: '';
+  position: absolute; right:-20px; top:-20px;
+  width: 100px; height: 100px; border-radius: 50%;
+  background: radial-gradient(circle, var(--pfc-glow, rgba(197,211,54,.08)) 0%, transparent 70%);
+  pointer-events: none;
+}
+.pfc-label { font-size: 9px; font-weight:700; color:var(--txt-muted); text-transform:uppercase; letter-spacing:1.2px; margin-bottom:10px; display:flex; align-items:center; gap:6px; }
+.pfc-dot   { width:7px; height:7px; border-radius:50%; background:var(--pfc-clr); flex-shrink:0; }
+.pfc-valor { font-size:26px; font-weight:800; color:var(--pfc-clr); letter-spacing:-1px; line-height:1; margin-bottom:4px; }
+.pfc-sub   { font-size:11px; color:var(--txt-secondary); margin-bottom:14px; }
+.pfc-stats { display:flex; gap:14px; border-top:1px solid var(--border); padding-top:12px; }
+.pfc-stat  { display:flex; flex-direction:column; gap:2px; }
+.pfc-stat-num { font-size:14px; font-weight:700; color:var(--txt-primary); font-family:'JetBrains Mono',monospace; }
+.pfc-stat-lbl { font-size:9px; color:var(--txt-muted); text-transform:uppercase; letter-spacing:.7px; }
+.pfc-pct-bar  { margin-top:10px; height:3px; background:rgba(255,255,255,.06); border-radius:2px; overflow:hidden; }
+.pfc-pct-fill { height:100%; border-radius:2px; background:var(--pfc-clr); transition:width .8s ease; }
+
+
 @media(max-width:768px) {
   .sidebar { display:none; }
   .main { padding:14px; }
@@ -744,46 +785,50 @@ code.inline {
           <div class="loading-state" style="grid-column:1/-1"><div class="spinner"></div></div>
         </div>
 
-        <!-- Charts row 1 -->
-        <div class="section-label">Distribución por proyecto y estado</div>
-        <div class="charts-grid" style="grid-template-columns:1fr 1fr 1.2fr;">
+        <!-- Tarjetas financieras por proyecto -->
+        <div class="section-label">Valor total por proyecto</div>
+        <div class="proj-finance-grid" id="proj-finance-cards"></div>
+
+        <!-- Charts fila 1: Valor por proyecto + Participación financiera -->
+        <div class="section-label">Análisis financiero consolidado</div>
+        <div class="charts-grid" style="grid-template-columns:1.4fr 1fr 1fr;">
           <div class="chart-card accent-lime">
-            <div class="chart-header"><div><div class="chart-title">Actividades por Proyecto</div><div class="chart-sub">Cirion · Liberty · Banca</div></div></div>
-            <div class="chart-wrap" style="height:240px"><canvas id="chart-gerencia-dona"></canvas></div>
+            <div class="chart-header"><div><div class="chart-title">Valor Total por Proyecto</div><div class="chart-sub">COP consolidado · comparativa</div></div></div>
+            <div class="chart-wrap" style="height:260px"><canvas id="chart-valor-bar"></canvas></div>
           </div>
           <div class="chart-card">
-            <div class="chart-header"><div><div class="chart-title">Estado de Actividades</div><div class="chart-sub">Distribución global</div></div></div>
-            <div class="chart-wrap" style="height:240px"><canvas id="chart-estado-dona"></canvas></div>
+            <div class="chart-header"><div><div class="chart-title">Participación en Valor Total</div><div class="chart-sub">% del total COP por proyecto</div></div></div>
+            <div class="chart-wrap" style="height:260px"><canvas id="chart-valor-dona"></canvas></div>
           </div>
           <div class="chart-card">
-            <div class="chart-header"><div><div class="chart-title">Valor Total por Proyecto</div><div class="chart-sub">COP consolidado</div></div></div>
-            <div class="chart-wrap" style="height:240px"><canvas id="chart-valor-bar"></canvas></div>
+            <div class="chart-header"><div><div class="chart-title">Actividades por Proyecto</div><div class="chart-sub">Volumen · Cirion · Liberty · Banca</div></div></div>
+            <div class="chart-wrap" style="height:260px"><canvas id="chart-gerencia-dona"></canvas></div>
           </div>
         </div>
 
-        <!-- Charts row 2 -->
-        <div class="section-label">Tendencia temporal</div>
+        <!-- Charts fila 2: Valor mensual stacked + Valor aprobado vs total -->
+        <div class="section-label">Tendencia de valor en el tiempo</div>
         <div class="charts-grid" style="grid-template-columns:2fr 1fr;">
           <div class="chart-card accent-lime">
-            <div class="chart-header"><div><div class="chart-title">Actividades por Mes · por Proyecto</div><div class="chart-sub">Basado en FECHA_FINALIZACION</div></div></div>
-            <div class="chart-wrap" style="height:270px"><canvas id="chart-mensual"></canvas></div>
+            <div class="chart-header"><div><div class="chart-title">Valor Total Mensual por Proyecto</div><div class="chart-sub">COP acumulado · FECHA_FINALIZACION</div></div></div>
+            <div class="chart-wrap" style="height:290px"><canvas id="chart-mensual"></canvas></div>
           </div>
           <div class="chart-card">
-            <div class="chart-header"><div><div class="chart-title">Top Tipos de Actividad</div><div class="chart-sub">Top 8</div></div></div>
-            <div class="chart-wrap" style="height:270px"><canvas id="chart-tipo-actividad"></canvas></div>
+            <div class="chart-header"><div><div class="chart-title">Valor Aprobado vs Total</div><div class="chart-sub">Comparativa por proyecto · COP</div></div></div>
+            <div class="chart-wrap" style="height:290px"><canvas id="chart-aprobado-vs-total"></canvas></div>
           </div>
         </div>
 
-        <!-- Charts row 3 -->
-        <div class="section-label">Geografía y coordinadores</div>
+        <!-- Charts fila 3: Valor acumulado + Ticket promedio -->
+        <div class="section-label">Indicadores de rentabilidad por proyecto</div>
         <div class="charts-grid" style="grid-template-columns:1fr 1fr;">
-          <div class="chart-card">
-            <div class="chart-header"><div><div class="chart-title">Top Ciudades</div><div class="chart-sub">Volumen de actividades</div></div></div>
-            <div class="chart-wrap" style="height:270px"><canvas id="chart-ciudad"></canvas></div>
+          <div class="chart-card accent-cirion">
+            <div class="chart-header"><div><div class="chart-title">Valor Promedio por Actividad</div><div class="chart-sub">Ticket promedio COP · por proyecto</div></div></div>
+            <div class="chart-wrap" style="height:260px"><canvas id="chart-ticket-promedio"></canvas></div>
           </div>
-          <div class="chart-card">
-            <div class="chart-header"><div><div class="chart-title">Top Coordinadores</div><div class="chart-sub">Top 10</div></div></div>
-            <div class="chart-wrap" style="height:270px"><canvas id="chart-coordinador"></canvas></div>
+          <div class="chart-card accent-lime">
+            <div class="chart-header"><div><div class="chart-title">Valor Acumulado en el Tiempo</div><div class="chart-sub">Curva de crecimiento COP · todos los proyectos</div></div></div>
+            <div class="chart-wrap" style="height:260px"><canvas id="chart-valor-acumulado"></canvas></div>
           </div>
         </div>
       </div>
@@ -1471,68 +1516,137 @@ function renderKPIs(data) {
 
 // ── General Charts ──
 function renderGeneralCharts(data) {
-  // Dona gerencia
-  const gc=countBy(data,'GERENCIA');
-  mkChart('chart-gerencia-dona','doughnut',{
-    labels:Object.keys(gc),
-    datasets:[{data:Object.values(gc),backgroundColor:[C.cirion,C.liberty,C.banca],borderWidth:0,hoverOffset:8}]
-  },{cutout:'68%',plugins:{...CHART_DEF.plugins,legend:{...CHART_DEF.plugins.legend,position:'bottom'}}});
+  const gers = ['CIRION','LIBERTY','BANCA'];
+  const gerClr = [C.cirion, C.liberty, C.banca];
+  const gerGlow = ['rgba(79,142,247,.12)','rgba(52,211,153,.12)','rgba(167,139,250,.12)'];
+  const vtTotal = sumBy(data,'VALOR_TOTAL');
 
-  // Dona estado
-  const ec=countBy(data,'ESTADO_ACTIVIDAD');
-  const ecColors=Object.keys(ec).map(k=>{const u=k.toUpperCase();if(u.includes('FINAL'))return C.success;if(u.includes('EJECUC'))return C.info;if(u.includes('PEND'))return C.warning;if(u.includes('CANCEL'))return C.danger;return'#374151';});
-  mkChart('chart-estado-dona','doughnut',{
-    labels:Object.keys(ec),datasets:[{data:Object.values(ec),backgroundColor:ecColors,borderWidth:0,hoverOffset:8}]
-  },{cutout:'68%',plugins:{...CHART_DEF.plugins,legend:{...CHART_DEF.plugins.legend,position:'bottom'}}});
+  // ── Tarjetas financieras por proyecto ──
+  const pfcEl = document.getElementById('proj-finance-cards');
+  if(pfcEl) {
+    pfcEl.innerHTML = gers.map((g,i) => {
+      const sub = data.filter(r=>r.GERENCIA===g);
+      const vt  = sumBy(sub,'VALOR_TOTAL');
+      const va  = sumBy(sub,'VALOR_APROBADO');
+      const fin = sub.filter(r=>(r.ESTADO_ACTIVIDAD||'').toUpperCase().includes('FINAL')).length;
+      const pctVal = vtTotal ? Math.round(vt/vtTotal*100) : 0;
+      const pctFin = sub.length ? Math.round(fin/sub.length*100) : 0;
+      const label = g.charAt(0)+g.slice(1).toLowerCase();
+      return `<div class="proj-finance-card" style="--pfc-clr:${gerClr[i]};--pfc-glow:${gerGlow[i]};animation-delay:${i*0.07}s">
+        <div class="pfc-label"><span class="pfc-dot"></span>${label}</div>
+        <div class="pfc-valor">${fmtCOP(vt)}</div>
+        <div class="pfc-sub">Valor total COP · ${pctVal}% del consolidado</div>
+        <div class="pfc-pct-bar"><div class="pfc-pct-fill" style="width:${pctVal}%"></div></div>
+        <div class="pfc-stats">
+          <div class="pfc-stat"><span class="pfc-stat-num">${sub.length.toLocaleString()}</span><span class="pfc-stat-lbl">Actividades</span></div>
+          <div class="pfc-stat"><span class="pfc-stat-num">${fmtCOP(va)}</span><span class="pfc-stat-lbl">Aprobado</span></div>
+          <div class="pfc-stat"><span class="pfc-stat-num" style="color:var(--clr-success)">${pctFin}%</span><span class="pfc-stat-lbl">Finalizadas</span></div>
+          <div class="pfc-stat"><span class="pfc-stat-num">${sub.length?fmtCOP(Math.round(vt/sub.length)):'-'}</span><span class="pfc-stat-lbl">Ticket avg</span></div>
+        </div>
+      </div>`;
+    }).join('');
+  }
 
-  // Barras valor por gerencia
-  const gers=['CIRION','LIBERTY','BANCA'];
-  const gerClr=[C.cirion,C.liberty,C.banca];
+  // ── Barras valor por proyecto ──
   mkChart('chart-valor-bar','bar',{
-    labels:gers,
-    datasets:[{label:'Valor Total (COP)',data:gers.map(g=>sumBy(data.filter(r=>r.GERENCIA===g),'VALOR_TOTAL')),backgroundColor:gerClr,borderRadius:8,borderSkipped:false}]
+    labels: gers.map(g=>g.charAt(0)+g.slice(1).toLowerCase()),
+    datasets:[{
+      label:'Valor Total (COP)',
+      data: gers.map(g=>sumBy(data.filter(r=>r.GERENCIA===g),'VALOR_TOTAL')),
+      backgroundColor: gerClr.map(c=>c+'cc'),
+      borderRadius:10, borderSkipped:false,
+      borderColor: gerClr, borderWidth:1.5,
+    }]
   },{
     plugins:{...CHART_DEF.plugins,legend:{display:false}},
-    scales:{y:{ticks:{color:TICK_COLOR,callback:v=>fmtCOP(v)},grid:{color:GRID_COLOR}},x:{ticks:{color:TICK_COLOR},grid:{display:false}}}
+    scales:{
+      y:{ticks:{color:TICK_COLOR,callback:v=>fmtCOP(v)},grid:{color:GRID_COLOR}},
+      x:{ticks:{color:TICK_COLOR},grid:{display:false}}
+    }
   });
 
-  // Tendencia mensual multi-línea
-  const allM=allMonthsFrom(data);
+  // ── Dona participación en valor ──
+  const valsProy = gers.map(g=>sumBy(data.filter(r=>r.GERENCIA===g),'VALOR_TOTAL'));
+  mkChart('chart-valor-dona','doughnut',{
+    labels: gers.map(g=>g.charAt(0)+g.slice(1).toLowerCase()),
+    datasets:[{data:valsProy, backgroundColor:gerClr, borderWidth:0, hoverOffset:8}]
+  },{cutout:'66%',plugins:{...CHART_DEF.plugins,legend:{...CHART_DEF.plugins.legend,position:'bottom'}}});
+
+  // ── Dona actividades por proyecto ──
+  const gc = countBy(data,'GERENCIA');
+  mkChart('chart-gerencia-dona','doughnut',{
+    labels:Object.keys(gc).map(g=>g.charAt(0)+g.slice(1).toLowerCase()),
+    datasets:[{data:Object.values(gc),backgroundColor:gerClr,borderWidth:0,hoverOffset:8}]
+  },{cutout:'66%',plugins:{...CHART_DEF.plugins,legend:{...CHART_DEF.plugins.legend,position:'bottom'}}});
+
+  // ── Tendencia mensual de VALOR (línea) ──
+  const allM = allMonthsFrom(data);
   mkChart('chart-mensual','line',{
-    labels:allM.map(ym=>monthLabel(ym)),
-    datasets:['CIRION','LIBERTY','BANCA'].map((g,i)=>{
-      const sub=data.filter(r=>r.GERENCIA===g);
-      const m={}; sub.forEach(r=>{const d=parseDate(r.FECHA_FINALIZACION);if(d){const k=toYM(d);m[k]=(m[k]||0)+1;}});
-      return{label:g,data:allM.map(k=>m[k]||0),borderColor:gerClr[i],backgroundColor:gerClr[i]+'22',borderWidth:2,fill:true,tension:.4,pointRadius:3,pointHoverRadius:5};
+    labels: allM.map(ym=>monthLabel(ym)),
+    datasets: gers.map((g,i)=>{
+      const sub = data.filter(r=>r.GERENCIA===g);
+      const m={}; sub.forEach(r=>{const d=parseDate(r.FECHA_FINALIZACION);if(d){const k=toYM(d);m[k]=(m[k]||0)+(parseFloat(r.VALOR_TOTAL)||0);}});
+      return{label:g.charAt(0)+g.slice(1).toLowerCase(),data:allM.map(k=>m[k]||0),borderColor:gerClr[i],backgroundColor:gerClr[i]+'22',borderWidth:2.5,fill:true,tension:.4,pointRadius:3,pointHoverRadius:6};
     })
   },{
     plugins:{...CHART_DEF.plugins},
-    scales:{y:{ticks:{color:TICK_COLOR},grid:{color:GRID_COLOR}},x:{ticks:{color:TICK_COLOR,maxTicksLimit:12},grid:{display:false}}}
+    scales:{
+      y:{ticks:{color:TICK_COLOR,callback:v=>fmtCOP(v)},grid:{color:GRID_COLOR}},
+      x:{ticks:{color:TICK_COLOR,maxTicksLimit:12},grid:{display:false}}
+    }
   });
 
-  // Top tipos
-  const tc=countBy(data,'TIPO_ACTIVIDAD');
-  const topT=topN(tc,8);
-  mkChart('chart-tipo-actividad','bar',{
-    labels:topT.map(([k])=>k.length>22?k.substring(0,22)+'…':k),
-    datasets:[{label:'Actividades',data:topT.map(([,v])=>v),backgroundColor:PALETTE.slice(0,8).map(c=>c+'cc'),borderRadius:6,borderSkipped:false}]
-  },{indexAxis:'y',plugins:{...CHART_DEF.plugins,legend:{display:false}},scales:{x:{ticks:{color:TICK_COLOR},grid:{color:GRID_COLOR}},y:{ticks:{color:TICK_COLOR,font:{size:10}}}}});
+  // ── Valor Aprobado vs Total (grouped bar) ──
+  mkChart('chart-aprobado-vs-total','bar',{
+    labels: gers.map(g=>g.charAt(0)+g.slice(1).toLowerCase()),
+    datasets:[
+      {label:'Valor Total',    data:gers.map(g=>sumBy(data.filter(r=>r.GERENCIA===g),'VALOR_TOTAL')),    backgroundColor:gerClr.map(c=>c+'99'), borderRadius:6, borderSkipped:false},
+      {label:'Valor Aprobado', data:gers.map(g=>sumBy(data.filter(r=>r.GERENCIA===g),'VALOR_APROBADO')), backgroundColor:gerClr.map(c=>c+'ee'), borderRadius:6, borderSkipped:false},
+    ]
+  },{
+    plugins:{...CHART_DEF.plugins,legend:{...CHART_DEF.plugins.legend,display:true}},
+    scales:{
+      y:{ticks:{color:TICK_COLOR,callback:v=>fmtCOP(v)},grid:{color:GRID_COLOR}},
+      x:{ticks:{color:TICK_COLOR},grid:{display:false}}
+    }
+  });
 
-  // Top ciudades
-  const cc=countBy(data,'CIUDAD');
-  const topC=topN(cc,10);
-  mkChart('chart-ciudad','bar',{
-    labels:topC.map(([k])=>k),
-    datasets:[{label:'Actividades',data:topC.map(([,v])=>v),backgroundColor:C.lime+'bb',borderRadius:6,borderSkipped:false}]
-  },{indexAxis:'y',plugins:{...CHART_DEF.plugins,legend:{display:false}},scales:{x:{ticks:{color:TICK_COLOR},grid:{color:GRID_COLOR}},y:{ticks:{color:TICK_COLOR,font:{size:10}}}}});
+  // ── Ticket promedio (valor/actividad) por proyecto ──
+  mkChart('chart-ticket-promedio','bar',{
+    labels: gers.map(g=>g.charAt(0)+g.slice(1).toLowerCase()),
+    datasets:[{
+      label:'Valor promedio / actividad',
+      data: gers.map(g=>{const sub=data.filter(r=>r.GERENCIA===g);return sub.length?Math.round(sumBy(sub,'VALOR_TOTAL')/sub.length):0;}),
+      backgroundColor: [C.cirion+'cc',C.liberty+'cc',C.banca+'cc'],
+      borderColor: gerClr, borderWidth:1.5, borderRadius:10, borderSkipped:false,
+    }]
+  },{
+    plugins:{...CHART_DEF.plugins,legend:{display:false}},
+    scales:{
+      y:{ticks:{color:TICK_COLOR,callback:v=>fmtCOP(v)},grid:{color:GRID_COLOR}},
+      x:{ticks:{color:TICK_COLOR},grid:{display:false}}
+    }
+  });
 
-  // Top coordinadores
-  const oc=countBy(data,'COORDINADOR');
-  const topO=topN(oc,10);
-  mkChart('chart-coordinador','bar',{
-    labels:topO.map(([k])=>k.length>18?k.substring(0,18)+'…':k),
-    datasets:[{label:'Actividades',data:topO.map(([,v])=>v),backgroundColor:C.cirion+'bb',borderRadius:6,borderSkipped:false}]
-  },{indexAxis:'y',plugins:{...CHART_DEF.plugins,legend:{display:false}},scales:{x:{ticks:{color:TICK_COLOR},grid:{color:GRID_COLOR}},y:{ticks:{color:TICK_COLOR,font:{size:10}}}}});
+  // ── Valor acumulado en el tiempo (curva) ──
+  const allMSorted = allMonthsFrom(data);
+  const acumDatasets = gers.map((g,i)=>{
+    const sub = data.filter(r=>r.GERENCIA===g);
+    const m={}; sub.forEach(r=>{const d=parseDate(r.FECHA_FINALIZACION);if(d){const k=toYM(d);m[k]=(m[k]||0)+(parseFloat(r.VALOR_TOTAL)||0);}});
+    let acum=0;
+    const vals = allMSorted.map(k=>{ acum+=(m[k]||0); return acum; });
+    return{label:g.charAt(0)+g.slice(1).toLowerCase(),data:vals,borderColor:gerClr[i],backgroundColor:gerClr[i]+'18',borderWidth:2.5,fill:true,tension:.4,pointRadius:2,pointHoverRadius:5};
+  });
+  mkChart('chart-valor-acumulado','line',{
+    labels:allMSorted.map(ym=>monthLabel(ym)),
+    datasets:acumDatasets
+  },{
+    plugins:{...CHART_DEF.plugins},
+    scales:{
+      y:{ticks:{color:TICK_COLOR,callback:v=>fmtCOP(v)},grid:{color:GRID_COLOR}},
+      x:{ticks:{color:TICK_COLOR,maxTicksLimit:12},grid:{display:false}}
+    }
+  });
 }
 
 // ════════════════════════════════════════
