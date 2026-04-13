@@ -1413,6 +1413,12 @@ function renderAll(data) {
   renderSummaryBand(data);
   renderKPIs(data);
   renderGeneralCharts(data);
+  // Actualizar tabs de proyectos si están activos (y siempre refrescar los datos)
+  renderProjectTab('cirion');
+  renderProjectTab('liberty');
+  renderProjectTab('banca');
+  renderMensualTab();
+  renderTable();
 }
 
 // ── Summary Band ──
@@ -1543,7 +1549,7 @@ function renderMensualTab() {
   const mesHasta= document.getElementById('men-mes-hasta')?.value||'';
   const proy    = document.getElementById('men-proyecto')?.value||'';
 
-  let data=RAW_DATA;
+  let data=FILTERED_DATA;
   if(proy) data=data.filter(r=>r.GERENCIA===proy);
 
   // Filtrar por período
@@ -1670,16 +1676,16 @@ function renderProjectTab(proj) {
   const mesKey=proj+'Mes';
   const activeMes=G==='CIRION'?_cirionMes:G==='LIBERTY'?_libertyMes:_bancaMes;
 
-  // Month strip for project
-  buildMonthStrip('month-strip-'+proj, RAW_DATA.filter(r=>r.GERENCIA===G), activeMes, m=>{
+  // Month strip for project — usa FILTERED_DATA para respetar filtros globales
+  buildMonthStrip('month-strip-'+proj, FILTERED_DATA.filter(r=>r.GERENCIA===G), activeMes, m=>{
     if(G==='CIRION') _cirionMes=m;
     else if(G==='LIBERTY') _libertyMes=m;
     else _bancaMes=m;
     renderProjectTab(proj);
   });
 
-  // Filter by month if active
-  let data=RAW_DATA.filter(r=>r.GERENCIA===G);
+  // Filter by month if active — parte de FILTERED_DATA (ya filtrado globalmente)
+  let data=FILTERED_DATA.filter(r=>r.GERENCIA===G);
   if(activeMes) data=data.filter(r=>{const d=parseDate(r.FECHA_FINALIZACION);return d&&toYM(d)===activeMes;});
 
   // KPIs
@@ -1702,7 +1708,7 @@ function renderProjectTab(proj) {
     mkChart('chart-cirion-negocio','bar',{labels:topNG.map(([k])=>k),datasets:[{label:'Act.',data:topNG.map(([,v])=>v),backgroundColor:C.cirion+'bb',borderRadius:6,borderSkipped:false}]},{indexAxis:'y',plugins:{...CHART_DEF.plugins,legend:{display:false}},scales:{x:{ticks:{color:TICK_COLOR},grid:{color:GRID_COLOR}},y:{ticks:{color:TICK_COLOR,font:{size:10}}}}});
     const znC=countBy(data,'ZONA'); const topZN=topN(znC,6);
     mkChart('chart-cirion-zona','bar',{labels:topZN.map(([k])=>k),datasets:[{label:'Act.',data:topZN.map(([,v])=>v),backgroundColor:C.lime+'bb',borderRadius:6,borderSkipped:false}]},{indexAxis:'y',plugins:{...CHART_DEF.plugins,legend:{display:false}},scales:{x:{ticks:{color:TICK_COLOR},grid:{color:GRID_COLOR}},y:{ticks:{color:TICK_COLOR,font:{size:10}}}}});
-    const allData=RAW_DATA.filter(r=>r.GERENCIA==='CIRION');
+    const allData=FILTERED_DATA.filter(r=>r.GERENCIA==='CIRION');
     const allM=allMonthsFrom(allData);
     const mV={}; allData.forEach(r=>{const d=parseDate(r.FECHA_FINALIZACION);if(d){const k=toYM(d);mV[k]=(mV[k]||0)+(parseFloat(r.VALOR_TOTAL)||0);}});
     mkChart('chart-cirion-mensual','bar',{labels:allM.map(ym=>monthLabel(ym)),datasets:[{label:'Valor (COP)',data:allM.map(k=>mV[k]||0),backgroundColor:allM.map(ym=>activeMes&&ym===activeMes?C.cirion:C.cirion+'55'),borderRadius:6,borderSkipped:false}]},{plugins:{...CHART_DEF.plugins,legend:{display:false}},scales:{y:{ticks:{color:TICK_COLOR,callback:v=>fmtCOP(v)},grid:{color:GRID_COLOR}},x:{ticks:{color:TICK_COLOR,maxTicksLimit:12},grid:{display:false}}}});
@@ -1722,7 +1728,7 @@ function renderProjectTab(proj) {
     mkChart('chart-liberty-estado','doughnut',{labels:Object.keys(estL),datasets:[{data:Object.values(estL),backgroundColor:[C.success,C.info,C.warning,C.danger,'#374151'],borderWidth:0,hoverOffset:6}]},{cutout:'66%',plugins:{...CHART_DEF.plugins,legend:{...CHART_DEF.plugins.legend,position:'bottom'}}});
     const tipL=countBy(data,'TIPO_ACTIVIDAD'); const topTL=topN(tipL,8);
     mkChart('chart-liberty-tipo','bar',{labels:topTL.map(([k])=>k.length>20?k.substring(0,20)+'…':k),datasets:[{label:'Act.',data:topTL.map(([,v])=>v),backgroundColor:C.liberty+'bb',borderRadius:6,borderSkipped:false}]},{indexAxis:'y',plugins:{...CHART_DEF.plugins,legend:{display:false}},scales:{x:{ticks:{color:TICK_COLOR},grid:{color:GRID_COLOR}},y:{ticks:{color:TICK_COLOR,font:{size:10}}}}});
-    const allData=RAW_DATA.filter(r=>r.GERENCIA==='LIBERTY');
+    const allData=FILTERED_DATA.filter(r=>r.GERENCIA==='LIBERTY');
     const allM=allMonthsFrom(allData);
     const mL={}; allData.forEach(r=>{const d=parseDate(r.FECHA_FINALIZACION);if(d){const k=toYM(d);mL[k]=(mL[k]||0)+1;}});
     mkChart('chart-liberty-mensual','line',{labels:allM.map(ym=>monthLabel(ym)),datasets:[{label:'Actividades',data:allM.map(k=>mL[k]||0),borderColor:C.liberty,backgroundColor:C.liberty+'22',borderWidth:2.5,fill:true,tension:.4,pointRadius:allM.map(ym=>activeMes&&ym===activeMes?6:3),pointBackgroundColor:allM.map(ym=>activeMes&&ym===activeMes?C.liberty:'transparent'),pointBorderColor:C.liberty}]},{plugins:{...CHART_DEF.plugins,legend:{display:false}},scales:{y:{ticks:{color:TICK_COLOR},grid:{color:GRID_COLOR}},x:{ticks:{color:TICK_COLOR,maxTicksLimit:12},grid:{display:false}}}});
@@ -1745,7 +1751,7 @@ function renderProjectTab(proj) {
     mkChart('chart-banca-forma','doughnut',{labels:Object.keys(vForma),datasets:[{data:Object.values(vForma),backgroundColor:[C.banca,C.success,'#4ade80'],borderWidth:0,hoverOffset:6}]},{cutout:'66%',plugins:{...CHART_DEF.plugins,legend:{...CHART_DEF.plugins.legend,position:'bottom'}}});
     const negB=countBy(data,'TIPO_NEGOCIO'); const topNB=topN(negB,6);
     mkChart('chart-banca-negocio','bar',{labels:topNB.map(([k])=>k),datasets:[{label:'Act.',data:topNB.map(([,v])=>v),backgroundColor:C.banca+'bb',borderRadius:6,borderSkipped:false}]},{indexAxis:'y',plugins:{...CHART_DEF.plugins,legend:{display:false}},scales:{x:{ticks:{color:TICK_COLOR},grid:{color:GRID_COLOR}},y:{ticks:{color:TICK_COLOR,font:{size:10}}}}});
-    const allData=RAW_DATA.filter(r=>r.GERENCIA==='BANCA');
+    const allData=FILTERED_DATA.filter(r=>r.GERENCIA==='BANCA');
     const allM=allMonthsFrom(allData);
     const mBV={}; allData.forEach(r=>{const d=parseDate(r.FECHA_FINALIZACION);if(d){const k=toYM(d);mBV[k]=(mBV[k]||0)+(parseFloat(r.VALOR_TOTAL)||0);}});
     mkChart('chart-banca-mensual','bar',{labels:allM.map(ym=>monthLabel(ym)),datasets:[{label:'Valor (COP)',data:allM.map(k=>mBV[k]||0),backgroundColor:allM.map(ym=>activeMes&&ym===activeMes?C.banca:C.banca+'55'),borderRadius:6,borderSkipped:false}]},{plugins:{...CHART_DEF.plugins,legend:{display:false}},scales:{y:{ticks:{color:TICK_COLOR,callback:v=>fmtCOP(v)},grid:{color:GRID_COLOR}},x:{ticks:{color:TICK_COLOR,maxTicksLimit:12},grid:{display:false}}}});
@@ -1791,7 +1797,7 @@ function renderTable(){
   _tableEstado  =document.getElementById('tabla-estado')?.value||'';
   _tableDesdeDt =document.getElementById('tabla-desde')?.value||'';
   _tableHastaDt =document.getElementById('tabla-hasta')?.value||'';
-  let rows=_tableFilter==='todos'?RAW_DATA:RAW_DATA.filter(r=>r.GERENCIA===_tableFilter);
+  let rows=_tableFilter==='todos'?FILTERED_DATA:FILTERED_DATA.filter(r=>r.GERENCIA===_tableFilter);
   if(_tableSearch) rows=rows.filter(r=>TABLE_COLS.some(c=>String(r[c.key]||'').toLowerCase().includes(_tableSearch)));
   if(_tableEstado) rows=rows.filter(r=>r.ESTADO_ACTIVIDAD===_tableEstado);
   const dDesde=_tableDesdeDt?new Date(_tableDesdeDt+'T00:00:00'):null;
