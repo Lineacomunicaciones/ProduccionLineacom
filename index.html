@@ -1,0 +1,2021 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dashboard Producción · Línea Comunicaciones</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+/* ═══════════════════════════════════════════════
+   LÍNEA BRAND SYSTEM — Dashboard Producción
+   Primary:  #001D62  (azul marino)
+   Accent:   #C5D336  (verde lima)
+   ═══════════════════════════════════════════════ */
+:root {
+  --azul:        #001D62;
+  --azul-mid:    #002b8f;
+  --azul-light:  #0036b0;
+  --lima:        #C5D336;
+  --lima-dark:   #9eaa25;
+  --lima-glow:   rgba(197,211,54,.25);
+  --blanco:      #FFFFFF;
+  --gris-bg:     #f0f2f7;
+  --gris-card:   #FFFFFF;
+  --gris-border: #dde3f0;
+  --gris-text:   #6b7a9a;
+  --gris-dark:   #2d3a5a;
+  --danger:      #e8334a;
+  --warning:     #f59e0b;
+  --success:     #22c55e;
+  --radius:      16px;
+  --radius-sm:   10px;
+  --shadow:      0 4px 24px rgba(0,29,98,.10), 0 1px 4px rgba(0,29,98,.06);
+  --shadow-lg:   0 8px 40px rgba(0,29,98,.16), 0 2px 8px rgba(0,29,98,.08);
+  --transition:  all .22s cubic-bezier(.4,0,.2,1);
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; -webkit-font-smoothing: antialiased; }
+
+body {
+  font-family: 'Outfit', sans-serif;
+  background: var(--gris-bg);
+  color: var(--gris-dark);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* ── SCROLLBAR ── */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: #e8ebf5; }
+::-webkit-scrollbar-thumb { background: #b0bbd6; border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--azul-mid); }
+
+/* ── ANIMATIONS ── */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+@keyframes shimmer {
+  0%   { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+@keyframes pulse {
+  0%,100% { opacity: .5; } 50% { opacity: 1; }
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+@keyframes countIn { from { opacity:0; transform:scale(.85); } to { opacity:1; transform:scale(1); } }
+@keyframes slideIn {
+  from { opacity:0; transform:translateX(-16px); }
+  to   { opacity:1; transform:translateX(0); }
+}
+
+.fade-up   { animation: fadeUp  .45s ease both; }
+.fade-up-1 { animation-delay: .05s; }
+.fade-up-2 { animation-delay: .10s; }
+.fade-up-3 { animation-delay: .15s; }
+.fade-up-4 { animation-delay: .20s; }
+
+/* ══════════════════════════════════════════════
+   LOGIN SCREEN
+   ══════════════════════════════════════════════ */
+#login-screen {
+  position: fixed; inset: 0;
+  background: var(--azul);
+  display: flex; align-items: center; justify-content: center;
+  z-index: 9999;
+  overflow: hidden;
+  transition: opacity .5s ease, visibility .5s;
+}
+#login-screen.hidden { opacity: 0; visibility: hidden; pointer-events: none; }
+
+/* Decorative bg pattern */
+#login-screen::before {
+  content: '';
+  position: absolute; inset: 0;
+  background:
+    radial-gradient(ellipse 60% 70% at 10% 20%, rgba(197,211,54,.18) 0%, transparent 60%),
+    radial-gradient(ellipse 50% 60% at 90% 80%, rgba(197,211,54,.10) 0%, transparent 60%),
+    radial-gradient(ellipse 40% 40% at 50% 50%, rgba(255,255,255,.04) 0%, transparent 55%);
+  pointer-events: none;
+}
+
+/* Grid overlay */
+#login-screen::after {
+  content: '';
+  position: absolute; inset: 0;
+  background-image:
+    linear-gradient(rgba(197,211,54,.06) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(197,211,54,.06) 1px, transparent 1px);
+  background-size: 50px 50px;
+  pointer-events: none;
+}
+
+/* Floating decorative circles */
+.login-deco {
+  position: absolute; border-radius: 50%; pointer-events: none;
+  animation: pulse 4s ease-in-out infinite;
+}
+.login-deco-1 {
+  width: 500px; height: 500px; right: -150px; top: -150px;
+  background: radial-gradient(circle, rgba(197,211,54,.12) 0%, transparent 70%);
+}
+.login-deco-2 {
+  width: 300px; height: 300px; left: -80px; bottom: -80px;
+  background: radial-gradient(circle, rgba(197,211,54,.08) 0%, transparent 70%);
+  animation-delay: 2s;
+}
+
+.login-card {
+  background: rgba(255,255,255,.97);
+  border-radius: 24px;
+  padding: 52px 48px 44px;
+  width: 460px;
+  max-width: 95vw;
+  position: relative;
+  z-index: 2;
+  animation: fadeUp .6s cubic-bezier(.34,1.56,.64,1);
+  box-shadow: 0 32px 80px rgba(0,0,0,.3), 0 8px 24px rgba(0,0,0,.2);
+  overflow: hidden;
+}
+.login-card::before {
+  content: '';
+  position: absolute; top: 0; left: 0; right: 0; height: 4px;
+  background: linear-gradient(90deg, var(--azul) 0%, var(--lima) 50%, var(--azul) 100%);
+  background-size: 200% 100%;
+  animation: shimmer 3s linear infinite;
+}
+
+.login-logo-wrap {
+  display: flex; justify-content: center;
+  margin-bottom: 36px;
+}
+/* SVG logo placeholder — same shape as LINEA mark */
+.login-logo-svg { height: 56px; }
+
+.login-title {
+  font-size: 22px; font-weight: 700; color: var(--azul);
+  margin-bottom: 6px; letter-spacing: -.3px; text-align: center;
+}
+.login-desc {
+  font-size: 13px; color: var(--gris-text); margin-bottom: 36px;
+  line-height: 1.6; text-align: center;
+}
+
+.divider-or {
+  display: flex; align-items: center; gap: 12px;
+  color: #b0bbd6; font-size: 12px; font-weight: 500;
+  margin: 20px 0;
+}
+.divider-or::before, .divider-or::after {
+  content: ''; flex: 1; height: 1px; background: var(--gris-border);
+}
+
+.login-error {
+  background: #fff1f2; border: 1px solid #fecdd3;
+  border-radius: var(--radius-sm); padding: 11px 14px;
+  color: var(--danger); font-size: 13px; margin-bottom: 16px;
+  display: none; animation: fadeIn .2s ease;
+}
+
+/* MS Login button */
+.btn-ms {
+  width: 100%; padding: 15px 20px;
+  display: flex; align-items: center; justify-content: center; gap: 12px;
+  background: var(--azul); color: #fff;
+  border: none; border-radius: var(--radius-sm);
+  font-family: 'Outfit', sans-serif; font-size: 15px; font-weight: 600;
+  cursor: pointer; transition: var(--transition); letter-spacing: .1px;
+  position: relative; overflow: hidden;
+}
+.btn-ms::after {
+  content: '';
+  position: absolute; inset: 0;
+  background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,.12) 50%, transparent 100%);
+  transform: translateX(-100%); transition: transform .4s ease;
+}
+.btn-ms:hover { background: var(--azul-mid); box-shadow: 0 4px 20px rgba(0,29,98,.4); }
+.btn-ms:hover::after { transform: translateX(100%); }
+.btn-ms:active { transform: scale(.98); }
+.btn-ms:disabled { opacity: .6; cursor: not-allowed; transform: none; }
+
+/* Demo login */
+.btn-demo {
+  width: 100%; padding: 12px;
+  background: transparent; border: 1.5px solid var(--gris-border);
+  border-radius: var(--radius-sm); color: var(--gris-text);
+  font-family: 'Outfit', sans-serif; font-size: 13px; font-weight: 500;
+  cursor: pointer; transition: var(--transition);
+}
+.btn-demo:hover { border-color: var(--lima); color: var(--gris-dark); background: rgba(197,211,54,.05); }
+
+.login-footer {
+  margin-top: 28px; text-align: center;
+  font-size: 11px; color: #c0cce0; line-height: 1.6;
+}
+
+/* ══════════════════════════════════════════════
+   APP SHELL
+   ══════════════════════════════════════════════ */
+#app { display: none; }
+#app.visible { display: flex; flex-direction: column; min-height: 100vh; animation: fadeIn .4s ease; }
+
+/* ── TOPBAR ── */
+.topbar {
+  position: sticky; top: 0; z-index: 100;
+  background: var(--azul);
+  border-bottom: 3px solid var(--lima);
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 28px; height: 64px;
+  box-shadow: 0 4px 24px rgba(0,29,98,.35);
+}
+
+.topbar-left { display: flex; align-items: center; gap: 16px; }
+.topbar-brand {
+  display: flex; align-items: center; gap: 10px;
+  font-size: 18px; font-weight: 800; color: #fff; letter-spacing: -.4px;
+}
+.topbar-brand span { color: var(--lima); }
+.topbar-sep { width: 1px; height: 28px; background: rgba(255,255,255,.15); }
+.topbar-module {
+  font-size: 12px; font-weight: 500; color: rgba(255,255,255,.6);
+  letter-spacing: .5px; text-transform: uppercase;
+}
+
+.topbar-right { display: flex; align-items: center; gap: 12px; }
+
+.topbar-badge {
+  background: rgba(197,211,54,.15); color: var(--lima);
+  border: 1px solid rgba(197,211,54,.3);
+  font-family: 'DM Mono', monospace;
+  font-size: 11px; font-weight: 500; padding: 4px 10px; border-radius: 20px;
+}
+
+.btn-logout {
+  padding: 8px 16px; background: rgba(255,255,255,.1);
+  border: 1px solid rgba(255,255,255,.15);
+  color: rgba(255,255,255,.85);
+  font-family: 'Outfit', sans-serif; font-size: 13px; font-weight: 500;
+  border-radius: 8px; cursor: pointer; transition: var(--transition);
+}
+.btn-logout:hover { background: rgba(255,255,255,.18); }
+
+/* User chip */
+.user-chip {
+  display: flex; align-items: center; gap: 8px;
+  padding: 4px 12px 4px 6px; border-radius: 24px;
+  background: rgba(255,255,255,.1); border: 1px solid rgba(255,255,255,.12);
+  cursor: pointer; transition: var(--transition);
+}
+.user-chip:hover { background: rgba(255,255,255,.18); }
+.user-avatar {
+  width: 28px; height: 28px; border-radius: 50%;
+  background: linear-gradient(135deg, var(--lima), var(--azul-light));
+  display: flex; align-items: center; justify-content: center;
+  font-size: 11px; font-weight: 700; color: #fff; flex-shrink: 0;
+  overflow: hidden;
+}
+.user-avatar img { width: 100%; height: 100%; object-fit: cover; }
+.user-name { font-size: 12px; font-weight: 600; color: #fff; line-height: 1.2; }
+.user-role { font-size: 10px; color: rgba(255,255,255,.55); }
+
+/* ── BODY LAYOUT ── */
+.app-body { display: flex; flex: 1; }
+
+/* ── SIDEBAR ── */
+.sidebar {
+  width: 230px; flex-shrink: 0;
+  background: #fff;
+  border-right: 1px solid var(--gris-border);
+  display: flex; flex-direction: column;
+  min-height: calc(100vh - 64px);
+  position: sticky; top: 64px; height: calc(100vh - 64px);
+  overflow-y: auto;
+}
+.sidebar-section {
+  padding: 20px 16px 8px;
+  font-size: 10px; font-weight: 700; color: #b0bbd6;
+  letter-spacing: 1.2px; text-transform: uppercase;
+}
+.nav-item {
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 16px; margin: 2px 8px;
+  border-radius: var(--radius-sm);
+  font-size: 13px; font-weight: 500; color: var(--gris-text);
+  cursor: pointer; transition: var(--transition);
+  border: none; background: transparent; width: calc(100% - 16px);
+  text-align: left;
+}
+.nav-item:hover { background: rgba(0,29,98,.06); color: var(--azul); }
+.nav-item.active {
+  background: var(--azul); color: #fff;
+  box-shadow: 0 4px 12px rgba(0,29,98,.25);
+}
+.nav-item.active .nav-icon { color: var(--lima); }
+.nav-icon { font-size: 16px; flex-shrink: 0; }
+.nav-label { flex: 1; }
+.nav-count {
+  font-family: 'DM Mono', monospace;
+  font-size: 10px; background: var(--lima); color: var(--azul);
+  border-radius: 10px; padding: 1px 7px; font-weight: 700;
+}
+.nav-item.active .nav-count { background: rgba(197,211,54,.3); color: var(--lima); }
+
+.sidebar-bottom {
+  margin-top: auto; padding: 16px;
+  border-top: 1px solid var(--gris-border);
+  font-size: 11px; color: #c0cce0; line-height: 1.6;
+}
+
+/* ── MAIN CONTENT ── */
+.main {
+  flex: 1; padding: 28px 32px;
+  overflow-y: auto; min-width: 0;
+}
+
+/* ── PAGE HEADER ── */
+.page-header {
+  display: flex; align-items: flex-start; justify-content: space-between;
+  margin-bottom: 28px; gap: 16px; flex-wrap: wrap;
+}
+.page-title {
+  font-size: 26px; font-weight: 800; color: var(--azul); letter-spacing: -.5px;
+  line-height: 1.2;
+}
+.page-sub {
+  font-size: 13px; color: var(--gris-text); margin-top: 4px;
+}
+.page-actions { display: flex; gap: 10px; align-items: center; }
+
+/* ── LAST UPDATE ── */
+#last-update {
+  font-family: 'DM Mono', monospace;
+  font-size: 11px; color: var(--gris-text);
+  background: rgba(0,29,98,.06);
+  border: 1px solid var(--gris-border);
+  padding: 5px 12px; border-radius: 20px;
+}
+
+/* ── LOADING SPINNER ── */
+.spinner {
+  width: 28px; height: 28px; border: 3px solid var(--gris-border);
+  border-top-color: var(--azul); border-radius: 50%;
+  animation: spin .8s linear infinite; margin: auto;
+}
+.loading-state {
+  display: flex; flex-direction: column; align-items: center;
+  gap: 12px; padding: 60px 20px; color: var(--gris-text); font-size: 13px;
+}
+
+/* ── FILTERS BAR ── */
+.filters-bar {
+  background: #fff; border: 1px solid var(--gris-border);
+  border-radius: var(--radius); padding: 18px 20px;
+  margin-bottom: 24px;
+  box-shadow: var(--shadow);
+}
+.filters-title {
+  font-size: 12px; font-weight: 700; color: var(--azul);
+  letter-spacing: .8px; text-transform: uppercase;
+  margin-bottom: 14px; display: flex; align-items: center; gap: 8px;
+}
+.filters-row { display: flex; flex-wrap: wrap; gap: 12px; align-items: flex-end; }
+.filter-group { display: flex; flex-direction: column; gap: 5px; }
+.filter-group label { font-size: 10px; font-weight: 700; color: var(--gris-text); text-transform: uppercase; letter-spacing: .8px; }
+.filter-group select, .filter-group input {
+  padding: 9px 12px; background: var(--gris-bg);
+  border: 1.5px solid var(--gris-border); border-radius: var(--radius-sm);
+  font-family: 'Outfit', sans-serif; font-size: 13px; color: var(--gris-dark);
+  outline: none; transition: var(--transition); min-width: 140px;
+}
+.filter-group select:focus, .filter-group input:focus {
+  border-color: var(--azul); background: #fff;
+  box-shadow: 0 0 0 3px rgba(0,29,98,.08);
+}
+.date-range-inputs { display: flex; align-items: center; gap: 6px; }
+.date-range-sep { color: var(--gris-text); font-size: 12px; }
+.filter-group input[type="date"] { min-width: 130px; }
+
+.btn-apply {
+  padding: 9px 18px; background: var(--azul); color: #fff;
+  border: none; border-radius: var(--radius-sm);
+  font-family: 'Outfit', sans-serif; font-size: 13px; font-weight: 600;
+  cursor: pointer; transition: var(--transition);
+}
+.btn-apply:hover { background: var(--azul-mid); }
+.btn-reset {
+  padding: 9px 14px; background: transparent;
+  border: 1.5px solid var(--gris-border); color: var(--gris-text);
+  border-radius: var(--radius-sm); font-family: 'Outfit', sans-serif;
+  font-size: 13px; font-weight: 500; cursor: pointer; transition: var(--transition);
+}
+.btn-reset:hover { border-color: var(--danger); color: var(--danger); }
+
+/* ── KPI GRID ── */
+.kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+  gap: 16px; margin-bottom: 28px;
+}
+.kpi-card {
+  background: #fff; border-radius: var(--radius);
+  padding: 20px; border: 1px solid var(--gris-border);
+  box-shadow: var(--shadow);
+  transition: var(--transition);
+  position: relative; overflow: hidden;
+  animation: countIn .4s ease both;
+}
+.kpi-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-lg); }
+.kpi-card::before {
+  content: '';
+  position: absolute; top: 0; left: 0; right: 0; height: 3px;
+  background: linear-gradient(90deg, var(--azul), var(--lima));
+}
+.kpi-label {
+  font-size: 10px; font-weight: 700; color: var(--gris-text);
+  text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px;
+}
+.kpi-value {
+  font-size: 32px; font-weight: 800; color: var(--azul);
+  letter-spacing: -1px; line-height: 1; margin-bottom: 4px;
+}
+.kpi-value.lima { color: var(--lima-dark); }
+.kpi-value.success { color: var(--success); }
+.kpi-value.warning { color: var(--warning); }
+.kpi-value.danger  { color: var(--danger); }
+.kpi-sub {
+  font-size: 11px; color: var(--gris-text); line-height: 1.4;
+}
+.kpi-icon {
+  position: absolute; right: 16px; bottom: 16px;
+  font-size: 28px; opacity: .12;
+}
+.kpi-bar {
+  margin-top: 10px; height: 4px; background: var(--gris-bg);
+  border-radius: 2px; overflow: hidden;
+}
+.kpi-bar-fill {
+  height: 100%; border-radius: 2px;
+  background: linear-gradient(90deg, var(--azul), var(--lima));
+  transition: width .6s ease;
+}
+
+/* ── SECTION LABEL ── */
+.section-label {
+  font-size: 11px; font-weight: 700; color: var(--gris-text);
+  text-transform: uppercase; letter-spacing: 1.2px;
+  display: flex; align-items: center; gap: 8px; margin-bottom: 16px;
+}
+.section-label::after {
+  content: ''; flex: 1; height: 1px; background: var(--gris-border);
+}
+
+/* ── CHARTS GRID ── */
+.charts-grid {
+  display: grid; gap: 16px; margin-bottom: 24px;
+}
+.chart-card {
+  background: #fff; border-radius: var(--radius);
+  border: 1px solid var(--gris-border);
+  box-shadow: var(--shadow); overflow: hidden;
+  animation: fadeUp .4s ease both;
+}
+.chart-header {
+  padding: 18px 20px 14px;
+  border-bottom: 1px solid var(--gris-border);
+  display: flex; align-items: flex-start; justify-content: space-between;
+  gap: 12px;
+}
+.chart-title { font-size: 14px; font-weight: 700; color: var(--azul); }
+.chart-sub { font-size: 11px; color: var(--gris-text); margin-top: 2px; }
+.chart-wrap { padding: 16px; }
+
+/* ── PROJECT TABS (subproyectos pill tabs) ── */
+.proj-tabs {
+  display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 24px;
+}
+.proj-tab {
+  padding: 8px 18px; border-radius: 24px;
+  font-size: 13px; font-weight: 600; cursor: pointer;
+  transition: var(--transition); border: 1.5px solid var(--gris-border);
+  background: #fff; color: var(--gris-text);
+}
+.proj-tab:hover { border-color: var(--azul); color: var(--azul); }
+.proj-tab.active {
+  background: var(--azul); color: #fff; border-color: var(--azul);
+  box-shadow: 0 4px 14px rgba(0,29,98,.3);
+}
+.proj-tab.cirion.active  { background: #001D62; border-color: #001D62; }
+.proj-tab.liberty.active { background: #0847a3; border-color: #0847a3; }
+.proj-tab.banca.active   { background: #166534; border-color: #166534; }
+
+/* ── DATA TABLE ── */
+.table-wrap { overflow-x: auto; }
+.data-table {
+  width: 100%; border-collapse: collapse;
+  font-size: 12px;
+}
+.data-table th {
+  background: #f5f7fb; color: var(--gris-text);
+  font-size: 10px; font-weight: 700; text-transform: uppercase;
+  letter-spacing: .8px; padding: 10px 12px;
+  text-align: left; border-bottom: 2px solid var(--gris-border);
+  position: sticky; top: 0; z-index: 1; cursor: pointer;
+  white-space: nowrap;
+}
+.data-table th:hover { background: #edf0f9; color: var(--azul); }
+.data-table td {
+  padding: 9px 12px; border-bottom: 1px solid #f0f2f7;
+  color: var(--gris-dark); max-width: 200px;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.data-table tr:hover td { background: rgba(0,29,98,.03); }
+.table-footer {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 12px 16px; border-top: 1px solid var(--gris-border);
+  font-size: 12px; color: var(--gris-text);
+}
+.pagination { display: flex; gap: 4px; }
+.pg-btn {
+  padding: 5px 10px; border-radius: 6px; font-size: 12px; font-weight: 500;
+  border: 1.5px solid var(--gris-border); background: #fff;
+  color: var(--gris-text); cursor: pointer; transition: var(--transition);
+  font-family: 'Outfit', sans-serif;
+}
+.pg-btn:hover { border-color: var(--azul); color: var(--azul); }
+.pg-btn.active { background: var(--azul); color: #fff; border-color: var(--azul); }
+.pg-btn:disabled { opacity: .4; cursor: default; }
+
+/* Status pills */
+.status-pill {
+  display: inline-block; padding: 3px 9px; border-radius: 12px;
+  font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .6px;
+  white-space: nowrap;
+}
+.sp-fin   { background: #dcfce7; color: #166534; }
+.sp-prog  { background: #dbeafe; color: #1d4ed8; }
+.sp-pend  { background: #fef9c3; color: #854d0e; }
+.sp-canc  { background: #fee2e2; color: #991b1b; }
+.sp-def   { background: #f3f4f6; color: #6b7280; }
+
+/* Gerencia badge */
+.gerencia-badge {
+  display: inline-block; padding: 3px 8px;
+  border-radius: 6px; font-size: 10px; font-weight: 700;
+  text-transform: uppercase; letter-spacing: .5px;
+}
+.gb-cirion  { background: rgba(0,29,98,.1);   color: #001D62; }
+.gb-liberty { background: rgba(8,71,163,.1);  color: #0847a3; }
+.gb-banca   { background: rgba(22,101,52,.1); color: #166534; }
+
+/* ── SUMMARY BAND ── */
+.summary-band {
+  background: linear-gradient(135deg, var(--azul) 0%, var(--azul-mid) 100%);
+  border-radius: var(--radius); padding: 20px 24px;
+  display: flex; gap: 28px; flex-wrap: wrap; margin-bottom: 24px;
+  box-shadow: var(--shadow-lg);
+}
+.summary-item { color: rgba(255,255,255,.7); min-width: 100px; }
+.summary-num {
+  font-size: 28px; font-weight: 800; color: #fff; letter-spacing: -1px;
+  display: block;
+}
+.summary-num.lima { color: var(--lima); }
+.summary-lbl { font-size: 11px; text-transform: uppercase; letter-spacing: .8px; margin-top: 2px; }
+
+/* ── EXPORT BTN ── */
+.btn-export {
+  padding: 8px 16px; background: var(--lima); color: var(--azul);
+  border: none; border-radius: var(--radius-sm);
+  font-family: 'Outfit', sans-serif; font-size: 12px; font-weight: 700;
+  cursor: pointer; transition: var(--transition); letter-spacing: .3px;
+}
+.btn-export:hover { background: var(--lima-dark); color: #fff; }
+
+/* ── TABS PANEL ── */
+.tab-panel { display: none; }
+.tab-panel.active { display: block; animation: fadeIn .3s ease; }
+
+/* ── EMPTY STATE ── */
+.empty-state {
+  text-align: center; padding: 60px 20px;
+  color: var(--gris-text); font-size: 14px;
+}
+.empty-state .icon { font-size: 40px; margin-bottom: 12px; opacity: .4; }
+
+/* ── TOOLTIP ── */
+.tippy {
+  position: relative; cursor: help;
+}
+.tippy::after {
+  content: attr(data-tip);
+  position: absolute; bottom: calc(100% + 8px); left: 50%;
+  transform: translateX(-50%) scale(.9);
+  background: var(--azul); color: #fff;
+  font-size: 11px; padding: 6px 10px; border-radius: 6px;
+  white-space: nowrap; opacity: 0; pointer-events: none;
+  transition: all .18s ease; transform-origin: bottom center;
+}
+.tippy:hover::after { opacity: 1; transform: translateX(-50%) scale(1); }
+
+/* ── RESPONSIVE ── */
+@media (max-width: 768px) {
+  .sidebar { display: none; }
+  .main { padding: 16px; }
+  .kpi-grid { grid-template-columns: repeat(2, 1fr); }
+  .charts-grid { grid-template-columns: 1fr !important; }
+  .topbar-module { display: none; }
+}
+
+/* ── DATA UPLOAD ZONE ── */
+.upload-zone {
+  border: 2px dashed var(--gris-border);
+  border-radius: var(--radius); padding: 40px 20px;
+  text-align: center; cursor: pointer; transition: var(--transition);
+  background: #fff;
+}
+.upload-zone:hover, .upload-zone.drag-over {
+  border-color: var(--azul); background: rgba(0,29,98,.03);
+}
+.upload-zone .icon { font-size: 36px; margin-bottom: 12px; opacity: .5; }
+.upload-zone p { font-size: 14px; color: var(--gris-text); margin-bottom: 6px; }
+.upload-zone small { font-size: 11px; color: #b0bbd6; }
+
+/* ── VALUE FORMAT ── */
+.val-currency {
+  font-family: 'DM Mono', monospace; font-size: 11px; color: var(--gris-text);
+}
+
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════
+     LOGIN SCREEN
+     ═══════════════════════════════════════════ -->
+<div id="login-screen">
+  <div class="login-deco login-deco-1"></div>
+  <div class="login-deco login-deco-2"></div>
+
+  <div class="login-card">
+    <div class="login-logo-wrap">
+      <!-- LÍNEA logo SVG inline (brand mark representation) -->
+      <svg class="login-logo-svg" viewBox="0 0 220 56" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <!-- Isotipo círculo -->
+        <circle cx="28" cy="28" r="26" fill="#C5D336"/>
+        <!-- Líneas curvas -->
+        <path d="M8 22 Q28 16 48 26" stroke="#001D62" stroke-width="3.5" stroke-linecap="round" fill="none"/>
+        <path d="M6 32 Q28 26 50 36" stroke="#001D62" stroke-width="3.5" stroke-linecap="round" fill="none"/>
+        <!-- Letra l -->
+        <line x1="28" y1="10" x2="28" y2="46" stroke="white" stroke-width="4" stroke-linecap="round"/>
+        <path d="M28 46 Q26 46 24 44" stroke="white" stroke-width="3" stroke-linecap="round" fill="none"/>
+        <!-- Logotipo text -->
+        <text x="64" y="36" font-family="sans-serif" font-weight="800" font-size="26" fill="#001D62">línea</text>
+        <!-- accent dot on i -->
+        <rect x="82" y="12" width="4" height="4" rx="2" fill="#C5D336"/>
+      </svg>
+    </div>
+
+    <div class="login-title">Dashboard de Producción</div>
+    <div class="login-desc">
+      Panel de visualización y control de subproyectos<br>
+      Cirion · Liberty · Banca Seguros
+    </div>
+
+    <div id="login-error" class="login-error"></div>
+
+    <button class="btn-ms" id="msLoginBtn" onclick="doMicrosoftLogin()">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 23 23" style="width:18px;height:18px;flex-shrink:0;">
+        <rect x="1" y="1" width="10" height="10" fill="#f25022"/>
+        <rect x="12" y="1" width="10" height="10" fill="#7fba00"/>
+        <rect x="1" y="12" width="10" height="10" fill="#00a4ef"/>
+        <rect x="12" y="12" width="10" height="10" fill="#ffb900"/>
+      </svg>
+      Iniciar sesión con Microsoft 365
+    </button>
+
+    <div class="divider-or"><span>o acceso demo</span></div>
+
+    <button class="btn-demo" onclick="doDemo()">🔍 Ver demo (sin autenticación)</button>
+
+    <div class="login-footer">
+      Solo cuentas @lineacom.co · Sesión de 1 hora<br>
+      Línea Comunicaciones S.A.S © 2025
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     APP
+     ═══════════════════════════════════════════ -->
+<div id="app">
+
+  <!-- TOPBAR -->
+  <header class="topbar">
+    <div class="topbar-left">
+      <div class="topbar-brand">
+        <svg viewBox="0 0 36 36" width="30" height="30" fill="none">
+          <circle cx="18" cy="18" r="17" fill="#C5D336"/>
+          <path d="M5 15 Q18 9 31 16" stroke="#001D62" stroke-width="2.5" stroke-linecap="round"/>
+          <path d="M4 22 Q18 16 32 23" stroke="#001D62" stroke-width="2.5" stroke-linecap="round"/>
+          <line x1="18" y1="7" x2="18" y2="29" stroke="white" stroke-width="3" stroke-linecap="round"/>
+          <path d="M18 29 Q16 29 15 27" stroke="white" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+        línea<span>com</span>
+      </div>
+      <div class="topbar-sep"></div>
+      <div class="topbar-module">Dashboard Producción</div>
+    </div>
+    <div class="topbar-right">
+      <div class="topbar-badge" id="last-update">Cargando…</div>
+      <button class="btn-logout" onclick="doLogout()">Cerrar sesión</button>
+    </div>
+  </header>
+
+  <div class="app-body">
+
+    <!-- SIDEBAR -->
+    <nav class="sidebar">
+      <div class="sidebar-section">Navegación</div>
+
+      <button class="nav-item active" id="nav-resumen" onclick="showTab('resumen')">
+        <span class="nav-icon">📊</span>
+        <span class="nav-label">Resumen General</span>
+      </button>
+      <button class="nav-item" id="nav-cirion" onclick="showTab('cirion')">
+        <span class="nav-icon">🔵</span>
+        <span class="nav-label">Cirion</span>
+        <span class="nav-count" id="cnt-cirion">—</span>
+      </button>
+      <button class="nav-item" id="nav-liberty" onclick="showTab('liberty')">
+        <span class="nav-icon">🟢</span>
+        <span class="nav-label">Liberty</span>
+        <span class="nav-count" id="cnt-liberty">—</span>
+      </button>
+      <button class="nav-item" id="nav-banca" onclick="showTab('banca')">
+        <span class="nav-icon">🏦</span>
+        <span class="nav-label">Banca Seguros</span>
+        <span class="nav-count" id="cnt-banca">—</span>
+      </button>
+
+      <div class="sidebar-section" style="margin-top:8px">Datos</div>
+
+      <button class="nav-item" id="nav-tabla" onclick="showTab('tabla')">
+        <span class="nav-icon">🗂️</span>
+        <span class="nav-label">Tabla Detalle</span>
+      </button>
+      <button class="nav-item" id="nav-carga" onclick="showTab('carga')">
+        <span class="nav-icon">📂</span>
+        <span class="nav-label">Cargar JSON</span>
+      </button>
+
+      <div class="sidebar-bottom">
+        Lineacom · v1.0<br>
+        <span id="sb-rows">0 registros cargados</span>
+      </div>
+    </nav>
+
+    <!-- MAIN -->
+    <main class="main">
+
+      <!-- ══ TAB: RESUMEN GENERAL ══ -->
+      <div id="tab-resumen" class="tab-panel active">
+        <div class="page-header fade-up">
+          <div>
+            <div class="page-title">Resumen General de Producción</div>
+            <div class="page-sub">Consolidado Cirion + Liberty + Banca Seguros</div>
+          </div>
+          <div class="page-actions">
+            <button class="btn-export" onclick="exportData('consolidado')">⬇ Exportar Excel</button>
+          </div>
+        </div>
+
+        <!-- Summary band -->
+        <div class="summary-band fade-up fade-up-1" id="summary-band">
+          <div class="loading-state"><div class="spinner"></div></div>
+        </div>
+
+        <!-- KPIs -->
+        <div class="section-label fade-up fade-up-2">Indicadores Clave de Producción</div>
+        <div class="kpi-grid fade-up fade-up-2" id="kpi-general">
+          <div class="loading-state" style="grid-column:1/-1"><div class="spinner"></div></div>
+        </div>
+
+        <!-- Charts row 1 -->
+        <div class="section-label fade-up fade-up-3">Distribución por Subproyecto y Estado</div>
+        <div class="charts-grid fade-up fade-up-3" style="grid-template-columns: 1fr 1fr 1.2fr;">
+          <div class="chart-card">
+            <div class="chart-header">
+              <div><div class="chart-title">Actividades por Gerencia</div><div class="chart-sub">Cirion · Liberty · Banca</div></div>
+            </div>
+            <div class="chart-wrap" style="height:260px"><canvas id="chart-gerencia-dona"></canvas></div>
+          </div>
+          <div class="chart-card">
+            <div class="chart-header">
+              <div><div class="chart-title">Estado de Actividades</div><div class="chart-sub">Distribución global</div></div>
+            </div>
+            <div class="chart-wrap" style="height:260px"><canvas id="chart-estado-dona"></canvas></div>
+          </div>
+          <div class="chart-card">
+            <div class="chart-header">
+              <div><div class="chart-title">Valor Total por Gerencia</div><div class="chart-sub">Suma valor_total (COP)</div></div>
+            </div>
+            <div class="chart-wrap" style="height:260px"><canvas id="chart-valor-bar"></canvas></div>
+          </div>
+        </div>
+
+        <!-- Charts row 2 -->
+        <div class="section-label">Tendencia Temporal y Distribución</div>
+        <div class="charts-grid" style="grid-template-columns: 2fr 1fr;">
+          <div class="chart-card">
+            <div class="chart-header">
+              <div><div class="chart-title">Tendencia Mensual de Producción</div><div class="chart-sub">Actividades por mes y gerencia</div></div>
+            </div>
+            <div class="chart-wrap" style="height:280px"><canvas id="chart-mensual"></canvas></div>
+          </div>
+          <div class="chart-card">
+            <div class="chart-header">
+              <div><div class="chart-title">Top Tipos de Actividad</div><div class="chart-sub">Top 8 tipos</div></div>
+            </div>
+            <div class="chart-wrap" style="height:280px"><canvas id="chart-tipo-actividad"></canvas></div>
+          </div>
+        </div>
+
+        <!-- Charts row 3 -->
+        <div class="section-label">Geografía y Coordinadores</div>
+        <div class="charts-grid" style="grid-template-columns: 1fr 1fr;">
+          <div class="chart-card">
+            <div class="chart-header">
+              <div><div class="chart-title">Top Ciudades / Zonas</div><div class="chart-sub">Por volumen de actividades</div></div>
+            </div>
+            <div class="chart-wrap" style="height:280px"><canvas id="chart-ciudad"></canvas></div>
+          </div>
+          <div class="chart-card">
+            <div class="chart-header">
+              <div><div class="chart-title">Producción por Coordinador</div><div class="chart-sub">Top 10 coordinadores</div></div>
+            </div>
+            <div class="chart-wrap" style="height:280px"><canvas id="chart-coordinador"></canvas></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══ TAB: CIRION ══ -->
+      <div id="tab-cirion" class="tab-panel">
+        <div class="page-header fade-up">
+          <div>
+            <div class="page-title" style="color:#001D62">Subproyecto Cirion</div>
+            <div class="page-sub">Actividades de red · contratos y tipologías</div>
+          </div>
+          <div class="page-actions">
+            <button class="btn-export" onclick="exportData('cirion')">⬇ Exportar Excel</button>
+          </div>
+        </div>
+        <div id="kpi-cirion" class="kpi-grid"></div>
+        <div class="charts-grid" style="grid-template-columns:1fr 1fr 1fr;">
+          <div class="chart-card">
+            <div class="chart-header"><div><div class="chart-title">Estado Actividades Cirion</div></div></div>
+            <div class="chart-wrap" style="height:250px"><canvas id="chart-cirion-estado"></canvas></div>
+          </div>
+          <div class="chart-card">
+            <div class="chart-header"><div><div class="chart-title">Tipo de Negocio</div></div></div>
+            <div class="chart-wrap" style="height:250px"><canvas id="chart-cirion-negocio"></canvas></div>
+          </div>
+          <div class="chart-card">
+            <div class="chart-header"><div><div class="chart-title">Top Zonas</div></div></div>
+            <div class="chart-wrap" style="height:250px"><canvas id="chart-cirion-zona"></canvas></div>
+          </div>
+        </div>
+        <div class="charts-grid" style="grid-template-columns:2fr 1fr;">
+          <div class="chart-card">
+            <div class="chart-header"><div><div class="chart-title">Valor Total Cirion por Mes</div></div></div>
+            <div class="chart-wrap" style="height:260px"><canvas id="chart-cirion-mensual"></canvas></div>
+          </div>
+          <div class="chart-card">
+            <div class="chart-header"><div><div class="chart-title">Top Bases Operativas</div></div></div>
+            <div class="chart-wrap" style="height:260px"><canvas id="chart-cirion-base"></canvas></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══ TAB: LIBERTY ══ -->
+      <div id="tab-liberty" class="tab-panel">
+        <div class="page-header fade-up">
+          <div>
+            <div class="page-title" style="color:#0847a3">Subproyecto Liberty</div>
+            <div class="page-sub">Actividades de servicio Liberty Seguros</div>
+          </div>
+          <div class="page-actions">
+            <button class="btn-export" onclick="exportData('liberty')">⬇ Exportar Excel</button>
+          </div>
+        </div>
+        <div id="kpi-liberty" class="kpi-grid"></div>
+        <div class="charts-grid" style="grid-template-columns:1fr 1fr;">
+          <div class="chart-card">
+            <div class="chart-header"><div><div class="chart-title">Estado Actividades Liberty</div></div></div>
+            <div class="chart-wrap" style="height:260px"><canvas id="chart-liberty-estado"></canvas></div>
+          </div>
+          <div class="chart-card">
+            <div class="chart-header"><div><div class="chart-title">Distribución por Tipo de Actividad</div></div></div>
+            <div class="chart-wrap" style="height:260px"><canvas id="chart-liberty-tipo"></canvas></div>
+          </div>
+        </div>
+        <div class="charts-grid" style="grid-template-columns:2fr 1fr;">
+          <div class="chart-card">
+            <div class="chart-header"><div><div class="chart-title">Actividades Liberty por Mes</div></div></div>
+            <div class="chart-wrap" style="height:260px"><canvas id="chart-liberty-mensual"></canvas></div>
+          </div>
+          <div class="chart-card">
+            <div class="chart-header"><div><div class="chart-title">Top Ciudades Liberty</div></div></div>
+            <div class="chart-wrap" style="height:260px"><canvas id="chart-liberty-ciudad"></canvas></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══ TAB: BANCA ══ -->
+      <div id="tab-banca" class="tab-panel">
+        <div class="page-header fade-up">
+          <div>
+            <div class="page-title" style="color:#166534">Subproyecto Banca Seguros</div>
+            <div class="page-sub">Red asociada · tipología · forma de atención</div>
+          </div>
+          <div class="page-actions">
+            <button class="btn-export" onclick="exportData('banca')">⬇ Exportar Excel</button>
+          </div>
+        </div>
+        <div id="kpi-banca" class="kpi-grid"></div>
+        <div class="charts-grid" style="grid-template-columns:1fr 1fr 1fr;">
+          <div class="chart-card">
+            <div class="chart-header"><div><div class="chart-title">Estado Actividades Banca</div></div></div>
+            <div class="chart-wrap" style="height:250px"><canvas id="chart-banca-estado"></canvas></div>
+          </div>
+          <div class="chart-card">
+            <div class="chart-header"><div><div class="chart-title">Forma de Atención</div></div></div>
+            <div class="chart-wrap" style="height:250px"><canvas id="chart-banca-forma"></canvas></div>
+          </div>
+          <div class="chart-card">
+            <div class="chart-header"><div><div class="chart-title">Tipo de Negocio</div></div></div>
+            <div class="chart-wrap" style="height:250px"><canvas id="chart-banca-negocio"></canvas></div>
+          </div>
+        </div>
+        <div class="charts-grid" style="grid-template-columns:1fr 1fr;">
+          <div class="chart-card">
+            <div class="chart-header"><div><div class="chart-title">Producción Banca por Mes</div></div></div>
+            <div class="chart-wrap" style="height:260px"><canvas id="chart-banca-mensual"></canvas></div>
+          </div>
+          <div class="chart-card">
+            <div class="chart-header"><div><div class="chart-title">Top Redes Asociadas</div></div></div>
+            <div class="chart-wrap" style="height:260px"><canvas id="chart-banca-red"></canvas></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══ TAB: TABLA DETALLE ══ -->
+      <div id="tab-tabla" class="tab-panel">
+        <div class="page-header fade-up">
+          <div>
+            <div class="page-title">Tabla de Detalle</div>
+            <div class="page-sub">Vista completa de todos los registros consolidados</div>
+          </div>
+          <div class="page-actions">
+            <div class="proj-tabs" style="margin-bottom:0">
+              <button class="proj-tab active" id="tt-todos" onclick="setTableFilter('todos')">Todos</button>
+              <button class="proj-tab" id="tt-cirion" onclick="setTableFilter('CIRION')">Cirion</button>
+              <button class="proj-tab" id="tt-liberty" onclick="setTableFilter('LIBERTY')">Liberty</button>
+              <button class="proj-tab" id="tt-banca" onclick="setTableFilter('BANCA')">Banca</button>
+            </div>
+            <button class="btn-export" onclick="exportData('tabla')">⬇ Exportar</button>
+          </div>
+        </div>
+
+        <!-- Filtros tabla -->
+        <div class="filters-bar" style="margin-bottom:16px">
+          <div class="filters-row">
+            <div class="filter-group">
+              <label>Buscar</label>
+              <input type="text" id="tabla-search" placeholder="ID, lugar, coordinador…" oninput="renderTable()" style="min-width:200px">
+            </div>
+            <div class="filter-group">
+              <label>Estado</label>
+              <select id="tabla-estado" onchange="renderTable()"><option value="">Todos</option></select>
+            </div>
+            <div class="filter-group">
+              <label>Desde</label>
+              <input type="date" id="tabla-desde" onchange="renderTable()">
+            </div>
+            <div class="filter-group">
+              <label>Hasta</label>
+              <input type="date" id="tabla-hasta" onchange="renderTable()">
+            </div>
+            <div style="align-self:flex-end">
+              <button class="btn-reset" onclick="resetTableFilters()">↺ Reset</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="chart-card">
+          <div class="table-wrap">
+            <table class="data-table" id="main-table"></table>
+          </div>
+          <div class="table-footer">
+            <span id="table-count" style="font-family:'DM Mono',monospace;font-size:11px">0 registros</span>
+            <div class="pagination" id="table-pagination"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══ TAB: CARGAR JSON ══ -->
+      <div id="tab-carga" class="tab-panel">
+        <div class="page-header fade-up">
+          <div>
+            <div class="page-title">Cargar Datos JSON</div>
+            <div class="page-sub">Sube el archivo consolidado.json generado por el script Python</div>
+          </div>
+        </div>
+
+        <div class="chart-card fade-up fade-up-1" style="padding:32px">
+          <div
+            class="upload-zone" id="upload-zone"
+            onclick="document.getElementById('file-input').click()"
+            ondragover="event.preventDefault();this.classList.add('drag-over')"
+            ondragleave="this.classList.remove('drag-over')"
+            ondrop="handleFileDrop(event)"
+          >
+            <div class="icon">📄</div>
+            <p>Haz clic o arrastra aquí tu archivo <strong>consolidado.json</strong></p>
+            <small>Generado por el script consolidado_produccion.py · formato records</small>
+          </div>
+          <input type="file" id="file-input" accept=".json" style="display:none" onchange="handleFileInput(this)">
+
+          <div id="upload-status" style="margin-top:16px;font-size:13px;color:var(--gris-text);display:none"></div>
+        </div>
+
+        <div class="chart-card fade-up fade-up-2" style="padding:24px;margin-top:16px">
+          <div class="chart-title" style="margin-bottom:12px">📋 Estructura esperada del JSON</div>
+          <p style="font-size:13px;color:var(--gris-text);margin-bottom:12px">El script Python genera un array de registros con estas columnas clave:</p>
+          <div style="background:#f5f7fb;border-radius:10px;padding:16px;font-family:'DM Mono',monospace;font-size:12px;color:#2d3a5a;line-height:1.8;overflow-x:auto">
+            <strong style="color:var(--azul)">Comunes:</strong> ID_TA · ID_FO · TIPO_ACTIVIDAD · ESTADO_ACTIVIDAD · FECHA_FINALIZACION · VALOR_TOTAL · GERENCIA<br>
+            <strong style="color:#0847a3">Cirion:</strong> VALOR_OBRA_CIVIL · VALOR_MATERIAL · VALOR_ADICIONAL · TIPO_NEGOCIO · ZONA · BASE_OPERATIVA · ITEM_FACTURACION<br>
+            <strong style="color:#166534">Banca:</strong> VALOR_ENTIDAD · VALOR_RED · FORMA_ATENCION · TIPOLOGIA · TECNICO · RED_ASOCIADA · GERENCIA<br>
+            <strong style="color:#854d0e">Liberty:</strong> VALOR_APROBADO · VALOR_OBRA_CIVIL · COORDINADOR · CIUDAD · CENTRO_DE_COSTOS · BASE_OPERATIVA
+          </div>
+        </div>
+      </div>
+
+    </main>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     SCRIPTS
+     ═══════════════════════════════════════════ -->
+<script>
+'use strict';
+
+// ══════════════════════════════════════════════
+// MSAL CONFIG (from existing app registration)
+// ══════════════════════════════════════════════
+const MSAL_CONFIG = {
+  auth: {
+    clientId:    'febe226c-0265-4fb2-b34e-3beebbb9fee8',
+    authority:   'https://login.microsoftonline.com/af1a17b2-5d34-4f58-8b6c-6b94c6cd87ea',
+    redirectUri: window.location.origin + window.location.pathname,
+    navigateToLoginRequestUrl: true
+  },
+  cache: { cacheLocation: 'sessionStorage', storeAuthStateInCookie: false }
+};
+const MS_SCOPES = ['openid', 'profile', 'email', 'User.Read'];
+const ALLOWED_DOMAIN = 'lineacom.co';
+const SESSION_DURATION = 3600000; // 1 hour
+
+let _msalInstance = null;
+let _sessionTimer = null;
+
+async function _loadMSAL() {
+  if (window.msal) return window.msal;
+  const urls = [
+    'https://alcdn.msauth.net/browser/2.38.3/js/msal-browser.min.js',
+    'https://alcdn.msftauth.net/browser/2.38.3/js/msal-browser.min.js',
+    'https://cdn.jsdelivr.net/npm/@azure/msal-browser@2.38.3/lib/msal-browser.min.js'
+  ];
+  for (const url of urls) {
+    try {
+      await new Promise((res, rej) => {
+        const s = document.createElement('script');
+        s.src = url; s.onload = res; s.onerror = rej;
+        document.head.appendChild(s);
+      });
+      if (window.msal) return window.msal;
+    } catch(_) {}
+  }
+  throw new Error('No se pudo cargar MSAL.');
+}
+
+function _showLoginError(msg) {
+  const e = document.getElementById('login-error');
+  e.innerHTML = '⚠ ' + msg;
+  e.style.display = 'block';
+  const btn = document.getElementById('msLoginBtn');
+  if (btn) {
+    btn.disabled = false;
+    btn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 23 23" style="width:18px;height:18px;flex-shrink:0;"><rect x="1" y="1" width="10" height="10" fill="#f25022"/><rect x="12" y="1" width="10" height="10" fill="#7fba00"/><rect x="1" y="12" width="10" height="10" fill="#00a4ef"/><rect x="12" y="12" width="10" height="10" fill="#ffb900"/></svg> Iniciar sesión con Microsoft 365`;
+  }
+}
+
+async function doMicrosoftLogin() {
+  const btn = document.getElementById('msLoginBtn');
+  if (btn) { btn.disabled = true; btn.textContent = 'Conectando con Microsoft…'; }
+  document.getElementById('login-error').style.display = 'none';
+
+  try {
+    const msal = await _loadMSAL();
+    _msalInstance = new msal.PublicClientApplication(MSAL_CONFIG);
+    await _msalInstance.initialize();
+    const result = await _msalInstance.loginPopup({ scopes: MS_SCOPES, prompt: 'select_account' });
+
+    const email  = result.account?.username || '';
+    const domain = email.split('@')[1]?.toLowerCase();
+    if (domain !== ALLOWED_DOMAIN) {
+      await _msalInstance.logoutPopup({ account: result.account }).catch(() => {});
+      _showLoginError(`Acceso denegado. Solo cuentas @${ALLOWED_DOMAIN}.<br><small style="opacity:.7">Tu cuenta: ${email}</small>`);
+      return;
+    }
+
+    let displayName = result.account.name || email;
+    let jobTitle = ''; let photo = null;
+    try {
+      const tok = await _msalInstance.acquireTokenSilent({ scopes: ['User.Read'], account: result.account });
+      const pr = await fetch('https://graph.microsoft.com/v1.0/me?$select=displayName,jobTitle', {
+        headers: { Authorization: `Bearer ${tok.accessToken}` }
+      });
+      if (pr.ok) { const p = await pr.json(); displayName = p.displayName || displayName; jobTitle = p.jobTitle || ''; }
+      const phr = await fetch('https://graph.microsoft.com/v1.0/me/photo/$value', {
+        headers: { Authorization: `Bearer ${tok.accessToken}` }
+      });
+      if (phr.ok) {
+        const blob = await phr.blob();
+        photo = await new Promise(r => { const fr = new FileReader(); fr.onload = () => r(fr.result); fr.readAsDataURL(blob); });
+      }
+    } catch(e) { console.warn('[Auth] Graph parcial', e.message); }
+
+    window._msUserProfile = { nombre: displayName, cargo: jobTitle, email, foto: photo };
+    _enterApp();
+  } catch(err) {
+    if (err.errorCode === 'user_cancelled') _showLoginError('Inicio de sesión cancelado.');
+    else { console.error('[Auth]', err); _showLoginError('Error al conectar con Microsoft. Intenta de nuevo.'); }
+  }
+}
+
+function doDemo() {
+  window._msUserProfile = { nombre: 'Usuario Demo', cargo: 'Vista de Demostración', email: 'demo@lineacom.co', foto: null };
+  _enterApp();
+}
+
+function _enterApp() {
+  const p = window._msUserProfile || {};
+  const topbarRight = document.querySelector('.topbar-right');
+  if (topbarRight && !document.getElementById('ms-user-chip')) {
+    const initials = (p.nombre || 'U').split(' ').map(w => w[0]).join('').substring(0, 2).toUpperCase();
+    const avatar = p.foto
+      ? `<img src="${p.foto}" style="width:100%;height:100%;object-fit:cover;">`
+      : `<span style="font-size:11px;font-weight:700;">${initials}</span>`;
+    const chip = document.createElement('div');
+    chip.id = 'ms-user-chip';
+    chip.className = 'user-chip';
+    chip.title = 'Cerrar sesión';
+    chip.onclick = () => { if (confirm('¿Cerrar sesión?')) doLogout(); };
+    chip.innerHTML = `<div class="user-avatar">${avatar}</div><div><div class="user-name">${p.nombre || ''}</div>${p.cargo ? `<div class="user-role">${p.cargo}</div>` : ''}</div>`;
+    const logoutBtn = topbarRight.querySelector('.btn-logout');
+    if (logoutBtn) topbarRight.insertBefore(chip, logoutBtn);
+    else topbarRight.appendChild(chip);
+  }
+
+  document.getElementById('login-screen').classList.add('hidden');
+  document.getElementById('app').classList.add('visible');
+
+  clearTimeout(_sessionTimer);
+  _sessionTimer = setTimeout(() => { alert('⏰ Sesión expirada.'); doLogout(); }, SESSION_DURATION);
+
+  initDashboard();
+}
+
+function doLogout() {
+  clearTimeout(_sessionTimer);
+  window._msUserProfile = null;
+  const chip = document.getElementById('ms-user-chip');
+  if (chip) chip.remove();
+  if (_msalInstance) {
+    try { const accs = _msalInstance.getAllAccounts(); if (accs.length) _msalInstance.logoutPopup({ account: accs[0] }).catch(() => {}); } catch(e) {}
+  }
+  document.getElementById('app').classList.remove('visible');
+  document.getElementById('login-screen').classList.remove('hidden');
+  document.getElementById('login-error').style.display = 'none';
+  const btn = document.getElementById('msLoginBtn');
+  if (btn) {
+    btn.disabled = false;
+    btn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 23 23" style="width:18px;height:18px;flex-shrink:0;"><rect x="1" y="1" width="10" height="10" fill="#f25022"/><rect x="12" y="1" width="10" height="10" fill="#7fba00"/><rect x="1" y="12" width="10" height="10" fill="#00a4ef"/><rect x="12" y="12" width="10" height="10" fill="#ffb900"/></svg> Iniciar sesión con Microsoft 365`;
+  }
+}
+
+// ══════════════════════════════════════════════
+// DATA STATE
+// ══════════════════════════════════════════════
+let RAW_DATA    = [];
+let CHART_INST  = {};
+let _tableFilter = 'todos';
+let _tablePage  = 1;
+const TABLE_SIZE = 50;
+let _tableSearch = '';
+let _tableEstado = '';
+let _tableDesdeDt = '';
+let _tableHastaDt = '';
+
+// Brand palette for charts
+const LINEA_PALETTE = [
+  '#001D62','#C5D336','#0847a3','#166534',
+  '#4a90d9','#9eaa25','#6baed6','#74c476',
+  '#fd8d3c','#e8334a','#756bb1','#636363'
+];
+const CHART_DEFAULTS = {
+  plugins: {
+    legend: { labels: { color: '#6b7a9a', font: { family: 'Outfit', size: 12 }, boxWidth: 12, padding: 14 } },
+    tooltip: {
+      backgroundColor: 'rgba(0,29,98,.95)', titleColor: '#C5D336',
+      bodyColor: '#ffffff', borderColor: 'rgba(197,211,54,.3)',
+      borderWidth: 1, padding: 12, cornerRadius: 8
+    }
+  }
+};
+
+function destroyChart(id) {
+  if (CHART_INST[id]) { CHART_INST[id].destroy(); delete CHART_INST[id]; }
+}
+function mkChart(id, type, data, opts = {}) {
+  destroyChart(id);
+  const ctx = document.getElementById(id);
+  if (!ctx) return;
+  CHART_INST[id] = new Chart(ctx, {
+    type,
+    data,
+    options: Object.assign({ responsive: true, maintainAspectRatio: false }, CHART_DEFAULTS, opts)
+  });
+}
+
+// ══════════════════════════════════════════════
+// NAVIGATION
+// ══════════════════════════════════════════════
+function showTab(name) {
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  const panel = document.getElementById('tab-' + name);
+  if (panel) panel.classList.add('active');
+  const nav = document.getElementById('nav-' + name);
+  if (nav) nav.classList.add('active');
+
+  // lazy render per tab
+  if (name === 'tabla') renderTable();
+}
+
+// ══════════════════════════════════════════════
+// INIT
+// ══════════════════════════════════════════════
+function initDashboard() {
+  loadDemoData(); // loads sample data; replaced when user uploads JSON
+}
+
+function loadDemoData() {
+  // Rich demo data matching the Python script output schema
+  const gerencias = ['CIRION','CIRION','CIRION','LIBERTY','LIBERTY','BANCA','BANCA'];
+  const estados   = ['FINALIZADO','EN EJECUCIÓN','PENDIENTE','CANCELADO','FINALIZADO'];
+  const tipos     = ['MANTENIMIENTO RED','INSTALACIÓN FIBRA','REVISIÓN NODO','ACTUALIZACIÓN SW','SOPORTE TÉCNICO','INSPECCIÓN','VISITA COMERCIAL','PRUEBA ACEPTACIÓN'];
+  const zonas     = ['ZONA NORTE','ZONA SUR','ZONA CENTRO','ZONA ORIENTE','ZONA OCCIDENTE'];
+  const bases     = ['BOGOTÁ','MEDELLÍN','CALI','BARRANQUILLA','BUCARAMANGA','PEREIRA','CARTAGENA'];
+  const coords    = ['Carlos García','Andrea Torres','Luis Martínez','María López','Juan Rodríguez','Pedro Sánchez','Ana Gómez','Felipe Vargas'];
+  const redes     = ['BANCOLOMBIA','DAVIVIENDA','BANCO DE BOGOTÁ','BBVA','COLPATRIA','AV VILLAS'];
+  const formas    = ['PRESENCIAL','REMOTA','MIXTA'];
+  const negocios  = ['FTTH','CORPORATIVO','PYME','GOBIERNO','RESIDENCIAL'];
+  const items     = ['IT-001','IT-002','IT-003','IT-004','IT-005'];
+
+  const data = [];
+  let seed = 42;
+  function rng() { seed = (seed * 1664525 + 1013904223) & 0xffffffff; return (seed >>> 0) / 0xffffffff; }
+  function pick(arr) { return arr[Math.floor(rng() * arr.length)]; }
+  function rndDate(monthOffset = 0) {
+    const d = new Date(2025, 0 + Math.floor(rng() * 12) + monthOffset, 1 + Math.floor(rng() * 28));
+    return d.toISOString().split('T')[0];
+  }
+
+  for (let i = 0; i < 800; i++) {
+    const ger = pick(gerencias);
+    const row = {
+      ID_TA: `TA-${String(10000 + i).padStart(6,'0')}`,
+      ID_FO: `FO-${String(5000 + Math.floor(rng()*3000)).padStart(6,'0')}`,
+      GERENCIA: ger,
+      TIPO_ACTIVIDAD: pick(tipos),
+      ESTADO_ACTIVIDAD: pick(estados),
+      FECHA_FINALIZACION: rndDate(),
+      VALOR_TOTAL: Math.round(rng() * 8000000 + 200000),
+      VALOR_OBRA_CIVIL: Math.round(rng() * 1500000),
+      VALOR_APROBADO: Math.round(rng() * 7000000 + 150000),
+      VALOR_MATERIAL: Math.round(rng() * 1000000),
+      VALOR_ADICIONAL: Math.round(rng() * 500000),
+      VALOR_ENTIDAD: Math.round(rng() * 3000000 + 100000),
+      VALOR_RED: Math.round(rng() * 2000000 + 100000),
+      COORDINADOR: pick(coords),
+      CIUDAD: pick(bases),
+      ZONA: pick(zonas),
+      BASE_OPERATIVA: pick(bases),
+      LUGAR_EJECUCION: `Punto ${Math.floor(rng()*500)+1}`,
+      CENTRO_DE_COSTOS: `CC-${Math.floor(rng()*20+1)}`,
+      TIPO_NEGOCIO: pick(negocios),
+      ITEM_FACTURACION: pick(items),
+      DESCRIPCION_ACTIVIDAD: `Actividad de ${pick(tipos).toLowerCase()} en ${pick(bases)}`,
+      RED_ASOCIADA: ger === 'BANCA' ? pick(redes) : 'NO APLICA',
+      FORMA_ATENCION: ger === 'BANCA' ? pick(formas) : 'NO APLICA',
+      TIPOLOGIA: ger === 'BANCA' ? pick(['TIPO A','TIPO B','TIPO C']) : 'NO APLICA',
+      TECNICO: `Técnico ${Math.floor(rng()*30+1)}`,
+    };
+    data.push(row);
+  }
+
+  loadData(data);
+}
+
+function loadData(data) {
+  RAW_DATA = data;
+  document.getElementById('last-update').textContent = `Actualizado: ${new Date().toLocaleDateString('es-CO')}`;
+  document.getElementById('sb-rows').textContent = `${RAW_DATA.length} registros cargados`;
+
+  // Update nav counts
+  ['CIRION','LIBERTY','BANCA'].forEach(g => {
+    const el = document.getElementById('cnt-' + g.toLowerCase());
+    if (el) el.textContent = RAW_DATA.filter(r => r.GERENCIA === g).length;
+  });
+
+  populateTableFilters();
+  renderAll();
+}
+
+function populateTableFilters() {
+  const estados = [...new Set(RAW_DATA.map(r => r.ESTADO_ACTIVIDAD).filter(Boolean))].sort();
+  const sel = document.getElementById('tabla-estado');
+  if (sel) {
+    sel.innerHTML = '<option value="">Todos</option>' +
+      estados.map(e => `<option value="${e}">${e}</option>`).join('');
+  }
+}
+
+// ══════════════════════════════════════════════
+// RENDER ALL
+// ══════════════════════════════════════════════
+function renderAll() {
+  renderSummaryBand();
+  renderKPIs();
+  renderGeneralCharts();
+  renderCirionCharts();
+  renderLibertyCharts();
+  renderBancaCharts();
+}
+
+// ══════════════════════════════════════════════
+// HELPERS
+// ══════════════════════════════════════════════
+function countBy(arr, key) {
+  return arr.reduce((acc, r) => { const v = r[key] || 'N/A'; acc[v] = (acc[v]||0)+1; return acc; }, {});
+}
+function sumBy(arr, key) {
+  return arr.reduce((s, r) => s + (parseFloat(r[key])||0), 0);
+}
+function topN(obj, n = 10) {
+  return Object.entries(obj).sort((a,b) => b[1]-a[1]).slice(0, n);
+}
+function fmtCOP(v) {
+  if (v >= 1e9) return `$${(v/1e9).toFixed(1)}B`;
+  if (v >= 1e6) return `$${(v/1e6).toFixed(1)}M`;
+  if (v >= 1e3) return `$${(v/1e3).toFixed(0)}K`;
+  return `$${v}`;
+}
+function statusClass(s) {
+  const u = (s||'').toUpperCase();
+  if (u.includes('FINAL') || u.includes('COMPLET')) return 'sp-fin';
+  if (u.includes('EJECUC') || u.includes('PROG'))  return 'sp-prog';
+  if (u.includes('PEND'))  return 'sp-pend';
+  if (u.includes('CANCEL')) return 'sp-canc';
+  return 'sp-def';
+}
+function gerenciaClass(g) {
+  const u = (g||'').toUpperCase();
+  if (u === 'CIRION')  return 'gb-cirion';
+  if (u === 'LIBERTY') return 'gb-liberty';
+  if (u === 'BANCA')   return 'gb-banca';
+  return 'sp-def';
+}
+function byMonth(arr) {
+  const m = {};
+  arr.forEach(r => {
+    const raw = r.FECHA_FINALIZACION || '';
+    const d = new Date(raw);
+    if (!isNaN(d.getTime()) && d.getFullYear() > 2000) {
+      const k = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
+      m[k] = (m[k]||0) + 1;
+    }
+  });
+  return m;
+}
+function byMonthValue(arr, key = 'VALOR_TOTAL') {
+  const m = {};
+  arr.forEach(r => {
+    const raw = r.FECHA_FINALIZACION || '';
+    const d = new Date(raw);
+    if (!isNaN(d.getTime()) && d.getFullYear() > 2000) {
+      const k = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
+      m[k] = (m[k]||0) + (parseFloat(r[key])||0);
+    }
+  });
+  return m;
+}
+
+// ══════════════════════════════════════════════
+// SUMMARY BAND
+// ══════════════════════════════════════════════
+function renderSummaryBand() {
+  const total      = RAW_DATA.length;
+  const finalizados = RAW_DATA.filter(r => (r.ESTADO_ACTIVIDAD||'').toUpperCase().includes('FINAL')).length;
+  const pct        = total ? Math.round(finalizados/total*100) : 0;
+  const valorTotal = sumBy(RAW_DATA, 'VALOR_TOTAL');
+  const cirion     = RAW_DATA.filter(r => r.GERENCIA === 'CIRION').length;
+  const liberty    = RAW_DATA.filter(r => r.GERENCIA === 'LIBERTY').length;
+  const banca      = RAW_DATA.filter(r => r.GERENCIA === 'BANCA').length;
+
+  document.getElementById('summary-band').innerHTML = `
+    <div class="summary-item"><span class="summary-num">${total.toLocaleString()}</span><span class="summary-lbl">Total actividades</span></div>
+    <div class="summary-item"><span class="summary-num lima">${pct}%</span><span class="summary-lbl">Finalizadas</span></div>
+    <div class="summary-item"><span class="summary-num">${fmtCOP(valorTotal)}</span><span class="summary-lbl">Valor total</span></div>
+    <div class="summary-item"><span class="summary-num">${cirion.toLocaleString()}</span><span class="summary-lbl">Cirion</span></div>
+    <div class="summary-item"><span class="summary-num">${liberty.toLocaleString()}</span><span class="summary-lbl">Liberty</span></div>
+    <div class="summary-item"><span class="summary-num">${banca.toLocaleString()}</span><span class="summary-lbl">Banca</span></div>
+  `;
+}
+
+// ══════════════════════════════════════════════
+// KPI CARDS
+// ══════════════════════════════════════════════
+function mkKpiCard(label, value, sub, cls='', icon='', pct=null, delay=0) {
+  return `<div class="kpi-card fade-up" style="animation-delay:${delay}s">
+    <div class="kpi-label">${label}</div>
+    <div class="kpi-value ${cls}">${value}</div>
+    <div class="kpi-sub">${sub}</div>
+    ${icon ? `<div class="kpi-icon">${icon}</div>` : ''}
+    ${pct !== null ? `<div class="kpi-bar"><div class="kpi-bar-fill" style="width:${Math.min(pct,100)}%"></div></div>` : ''}
+  </div>`;
+}
+
+function renderKPIs() {
+  // General KPIs
+  const total = RAW_DATA.length;
+  const fin   = RAW_DATA.filter(r => (r.ESTADO_ACTIVIDAD||'').toUpperCase().includes('FINAL')).length;
+  const eje   = RAW_DATA.filter(r => (r.ESTADO_ACTIVIDAD||'').toUpperCase().includes('EJECUC')).length;
+  const pend  = RAW_DATA.filter(r => (r.ESTADO_ACTIVIDAD||'').toUpperCase().includes('PEND')).length;
+  const canc  = RAW_DATA.filter(r => (r.ESTADO_ACTIVIDAD||'').toUpperCase().includes('CANCEL')).length;
+  const vt    = sumBy(RAW_DATA,'VALOR_TOTAL');
+  const va    = sumBy(RAW_DATA,'VALOR_APROBADO');
+  const pctFin = total ? Math.round(fin/total*100) : 0;
+
+  document.getElementById('kpi-general').innerHTML = [
+    mkKpiCard('Total Actividades', total.toLocaleString(), 'Consolidado todos los subproyectos', '', '📋', null, .00),
+    mkKpiCard('Finalizadas', fin.toLocaleString(), `${pctFin}% del total`, 'success', '✅', pctFin, .04),
+    mkKpiCard('En Ejecución', eje.toLocaleString(), 'Actividades activas en campo', 'lima', '⚡', null, .08),
+    mkKpiCard('Pendientes', pend.toLocaleString(), 'Sin iniciar o en espera', 'warning', '⏳', null, .12),
+    mkKpiCard('Canceladas', canc.toLocaleString(), 'Actividades anuladas', 'danger', '❌', null, .16),
+    mkKpiCard('Valor Total', fmtCOP(vt), 'Suma valor_total consolidado', '', '💰', null, .20),
+    mkKpiCard('Valor Aprobado', fmtCOP(va), 'Suma valor_aprobado', 'lima', '✔', null, .24),
+    mkKpiCard('% Aprobado/Total', vt ? Math.round(va/vt*100)+'%' : '—', 'Ratio aprobación sobre total', 'success', '📈', vt?Math.round(va/vt*100):0, .28),
+  ].join('');
+
+  // Cirion KPIs
+  const c = RAW_DATA.filter(r => r.GERENCIA === 'CIRION');
+  const cFin = c.filter(r => (r.ESTADO_ACTIVIDAD||'').toUpperCase().includes('FINAL')).length;
+  document.getElementById('kpi-cirion').innerHTML = [
+    mkKpiCard('Total Cirion', c.length.toLocaleString(), 'Actividades del subproyecto', '', '🔵', null, .00),
+    mkKpiCard('Finalizadas', cFin.toLocaleString(), c.length ? Math.round(cFin/c.length*100)+'% del total' : '—', 'success', '✅', c.length?Math.round(cFin/c.length*100):0, .04),
+    mkKpiCard('Valor Total', fmtCOP(sumBy(c,'VALOR_TOTAL')), 'COP', '', '💰', null, .08),
+    mkKpiCard('Obra Civil', fmtCOP(sumBy(c,'VALOR_OBRA_CIVIL')), 'COP', 'warning', '🏗', null, .12),
+    mkKpiCard('Material', fmtCOP(sumBy(c,'VALOR_MATERIAL')), 'COP', 'lima', '📦', null, .16),
+    mkKpiCard('Coordinadores', [...new Set(c.map(r=>r.COORDINADOR).filter(Boolean))].length, 'Coordinadores únicos', '', '👤', null, .20),
+  ].join('');
+
+  // Liberty KPIs
+  const l = RAW_DATA.filter(r => r.GERENCIA === 'LIBERTY');
+  const lFin = l.filter(r => (r.ESTADO_ACTIVIDAD||'').toUpperCase().includes('FINAL')).length;
+  document.getElementById('kpi-liberty').innerHTML = [
+    mkKpiCard('Total Liberty', l.length.toLocaleString(), 'Actividades del subproyecto', '', '🟢', null, .00),
+    mkKpiCard('Finalizadas', lFin.toLocaleString(), l.length ? Math.round(lFin/l.length*100)+'% del total' : '—', 'success', '✅', l.length?Math.round(lFin/l.length*100):0, .04),
+    mkKpiCard('Valor Total', fmtCOP(sumBy(l,'VALOR_TOTAL')), 'COP', '', '💰', null, .08),
+    mkKpiCard('Valor Aprobado', fmtCOP(sumBy(l,'VALOR_APROBADO')), 'COP', 'lima', '✔', null, .12),
+    mkKpiCard('Obra Civil', fmtCOP(sumBy(l,'VALOR_OBRA_CIVIL')), 'COP', 'warning', '🏗', null, .16),
+    mkKpiCard('Ciudades', [...new Set(l.map(r=>r.CIUDAD).filter(Boolean))].length, 'Ciudades únicas', '', '📍', null, .20),
+  ].join('');
+
+  // Banca KPIs
+  const b = RAW_DATA.filter(r => r.GERENCIA === 'BANCA');
+  const bFin = b.filter(r => (r.ESTADO_ACTIVIDAD||'').toUpperCase().includes('FINAL')).length;
+  document.getElementById('kpi-banca').innerHTML = [
+    mkKpiCard('Total Banca', b.length.toLocaleString(), 'Actividades del subproyecto', '', '🏦', null, .00),
+    mkKpiCard('Finalizadas', bFin.toLocaleString(), b.length ? Math.round(bFin/b.length*100)+'% del total' : '—', 'success', '✅', b.length?Math.round(bFin/b.length*100):0, .04),
+    mkKpiCard('Valor Total', fmtCOP(sumBy(b,'VALOR_TOTAL')), 'COP', '', '💰', null, .08),
+    mkKpiCard('Valor Entidad', fmtCOP(sumBy(b,'VALOR_ENTIDAD')), 'COP', 'lima', '🏛', null, .12),
+    mkKpiCard('Valor Red', fmtCOP(sumBy(b,'VALOR_RED')), 'COP', 'warning', '🌐', null, .16),
+    mkKpiCard('Redes Asociadas', [...new Set(b.map(r=>r.RED_ASOCIADA).filter(v=>v&&v!=='NO APLICA'))].length, 'Redes únicas', '', '🔗', null, .20),
+  ].join('');
+}
+
+// ══════════════════════════════════════════════
+// GENERAL CHARTS
+// ══════════════════════════════════════════════
+function renderGeneralCharts() {
+  // Dona gerencia
+  const gerCnt = countBy(RAW_DATA, 'GERENCIA');
+  mkChart('chart-gerencia-dona','doughnut',{
+    labels: Object.keys(gerCnt),
+    datasets:[{ data: Object.values(gerCnt), backgroundColor:['#001D62','#0847a3','#166534'], borderWidth:0, hoverOffset:6 }]
+  },{
+    plugins: { ...CHART_DEFAULTS.plugins, legend: { ...CHART_DEFAULTS.plugins.legend, position:'bottom' } },
+    cutout:'68%'
+  });
+
+  // Dona estado
+  const estCnt = countBy(RAW_DATA, 'ESTADO_ACTIVIDAD');
+  const estColors = Object.keys(estCnt).map(k => {
+    const u = k.toUpperCase();
+    if (u.includes('FINAL')) return '#22c55e';
+    if (u.includes('EJECUC')) return '#3b82f6';
+    if (u.includes('PEND'))  return '#f59e0b';
+    if (u.includes('CANCEL')) return '#e8334a';
+    return '#9ca3af';
+  });
+  mkChart('chart-estado-dona','doughnut',{
+    labels: Object.keys(estCnt),
+    datasets:[{ data: Object.values(estCnt), backgroundColor: estColors, borderWidth:0, hoverOffset:6 }]
+  },{
+    plugins: { ...CHART_DEFAULTS.plugins, legend: { ...CHART_DEFAULTS.plugins.legend, position:'bottom' } },
+    cutout:'68%'
+  });
+
+  // Barras valor por gerencia
+  const gers = ['CIRION','LIBERTY','BANCA'];
+  const vals = gers.map(g => sumBy(RAW_DATA.filter(r => r.GERENCIA===g), 'VALOR_TOTAL'));
+  mkChart('chart-valor-bar','bar',{
+    labels: gers,
+    datasets:[{
+      label:'Valor Total (COP)',
+      data: vals,
+      backgroundColor:['#001D62','#0847a3','#166534'],
+      borderRadius:8, borderSkipped:false
+    }]
+  },{
+    plugins: { ...CHART_DEFAULTS.plugins, legend: { display:false } },
+    scales: {
+      y: { ticks: { color:'#6b7a9a', callback: v => fmtCOP(v) }, grid: { color:'rgba(0,0,0,.06)' } },
+      x: { ticks: { color:'#6b7a9a' }, grid: { display:false } }
+    }
+  });
+
+  // Tendencia mensual
+  const gers3 = ['CIRION','LIBERTY','BANCA'];
+  const gerColors = ['#001D62','#0847a3','#166534'];
+  const allMonths = [...new Set(RAW_DATA.map(r => {
+    const d = new Date(r.FECHA_FINALIZACION||'');
+    return isNaN(d)?null:`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
+  }).filter(Boolean))].sort();
+
+  mkChart('chart-mensual','line',{
+    labels: allMonths,
+    datasets: gers3.map((g, i) => {
+      const sub = RAW_DATA.filter(r => r.GERENCIA===g);
+      const m = byMonth(sub);
+      return {
+        label: g, data: allMonths.map(k => m[k]||0),
+        borderColor: gerColors[i], backgroundColor: gerColors[i]+'22',
+        borderWidth: 2, fill: true, tension: .4,
+        pointRadius: 3, pointHoverRadius: 5
+      };
+    })
+  },{
+    plugins: { ...CHART_DEFAULTS.plugins },
+    scales: {
+      y: { ticks:{ color:'#6b7a9a' }, grid:{ color:'rgba(0,0,0,.06)' } },
+      x: { ticks:{ color:'#6b7a9a', maxTicksLimit:10 }, grid:{ display:false } }
+    }
+  });
+
+  // Top tipos actividad
+  const tipoCnt = countBy(RAW_DATA,'TIPO_ACTIVIDAD');
+  const topTipos = topN(tipoCnt, 8);
+  mkChart('chart-tipo-actividad','bar',{
+    labels: topTipos.map(([k])=>k.length>22?k.substring(0,22)+'…':k),
+    datasets:[{
+      label:'Actividades',
+      data: topTipos.map(([,v])=>v),
+      backgroundColor: LINEA_PALETTE.slice(0,8).map(c=>c+'cc'),
+      borderRadius:6, borderSkipped:false
+    }]
+  },{
+    indexAxis:'y',
+    plugins:{ ...CHART_DEFAULTS.plugins, legend:{display:false} },
+    scales:{
+      x:{ ticks:{color:'#6b7a9a'}, grid:{color:'rgba(0,0,0,.06)'} },
+      y:{ ticks:{color:'#6b7a9a',font:{size:11}} }
+    }
+  });
+
+  // Top ciudades
+  const cCnt = countBy(RAW_DATA,'CIUDAD');
+  const topC = topN(cCnt, 10);
+  mkChart('chart-ciudad','bar',{
+    labels: topC.map(([k])=>k),
+    datasets:[{
+      label:'Actividades',
+      data: topC.map(([,v])=>v),
+      backgroundColor:'#C5D336',
+      borderRadius:6, borderSkipped:false
+    }]
+  },{
+    indexAxis:'y',
+    plugins:{ ...CHART_DEFAULTS.plugins, legend:{display:false} },
+    scales:{
+      x:{ ticks:{color:'#6b7a9a'}, grid:{color:'rgba(0,0,0,.06)'} },
+      y:{ ticks:{color:'#6b7a9a',font:{size:11}} }
+    }
+  });
+
+  // Top coordinadores
+  const coordCnt = countBy(RAW_DATA,'COORDINADOR');
+  const topCoord = topN(coordCnt, 10);
+  mkChart('chart-coordinador','bar',{
+    labels: topCoord.map(([k])=>k),
+    datasets:[{
+      label:'Actividades',
+      data: topCoord.map(([,v])=>v),
+      backgroundColor:'#001D62',
+      borderRadius:6, borderSkipped:false
+    }]
+  },{
+    indexAxis:'y',
+    plugins:{ ...CHART_DEFAULTS.plugins, legend:{display:false} },
+    scales:{
+      x:{ ticks:{color:'#6b7a9a'}, grid:{color:'rgba(0,0,0,.06)'} },
+      y:{ ticks:{color:'#6b7a9a',font:{size:11}} }
+    }
+  });
+}
+
+// ══════════════════════════════════════════════
+// CIRION CHARTS
+// ══════════════════════════════════════════════
+function renderCirionCharts() {
+  const c = RAW_DATA.filter(r => r.GERENCIA === 'CIRION');
+
+  const estC = countBy(c,'ESTADO_ACTIVIDAD');
+  mkChart('chart-cirion-estado','doughnut',{
+    labels:Object.keys(estC),
+    datasets:[{data:Object.values(estC),backgroundColor:['#22c55e','#3b82f6','#f59e0b','#e8334a','#9ca3af'],borderWidth:0,hoverOffset:5}]
+  },{ cutout:'65%', plugins:{...CHART_DEFAULTS.plugins,legend:{...CHART_DEFAULTS.plugins.legend,position:'bottom'}} });
+
+  const negC = countBy(c,'TIPO_NEGOCIO');
+  const topNeg = topN(negC,7);
+  mkChart('chart-cirion-negocio','bar',{
+    labels:topNeg.map(([k])=>k),
+    datasets:[{label:'Actividades',data:topNeg.map(([,v])=>v),backgroundColor:'#001D62',borderRadius:6,borderSkipped:false}]
+  },{
+    indexAxis:'y',
+    plugins:{...CHART_DEFAULTS.plugins,legend:{display:false}},
+    scales:{x:{ticks:{color:'#6b7a9a'},grid:{color:'rgba(0,0,0,.06)'}},y:{ticks:{color:'#6b7a9a',font:{size:11}}}}
+  });
+
+  const zonaC = countBy(c,'ZONA');
+  const topZ = topN(zonaC,6);
+  mkChart('chart-cirion-zona','bar',{
+    labels:topZ.map(([k])=>k),
+    datasets:[{label:'Actividades',data:topZ.map(([,v])=>v),backgroundColor:'#C5D336',borderRadius:6,borderSkipped:false}]
+  },{
+    indexAxis:'y',
+    plugins:{...CHART_DEFAULTS.plugins,legend:{display:false}},
+    scales:{x:{ticks:{color:'#6b7a9a'},grid:{color:'rgba(0,0,0,.06)'}},y:{ticks:{color:'#6b7a9a',font:{size:11}}}}
+  });
+
+  const mC = byMonthValue(c,'VALOR_TOTAL');
+  const months = Object.keys(mC).sort();
+  mkChart('chart-cirion-mensual','bar',{
+    labels:months,
+    datasets:[{
+      label:'Valor Total (COP)',
+      data:months.map(k=>mC[k]),
+      backgroundColor:'#001D62',
+      borderRadius:6,borderSkipped:false
+    }]
+  },{
+    plugins:{...CHART_DEFAULTS.plugins,legend:{display:false}},
+    scales:{
+      y:{ticks:{color:'#6b7a9a',callback:v=>fmtCOP(v)},grid:{color:'rgba(0,0,0,.06)'}},
+      x:{ticks:{color:'#6b7a9a'},grid:{display:false}}
+    }
+  });
+
+  const baseC = countBy(c,'BASE_OPERATIVA');
+  const topB = topN(baseC,6);
+  mkChart('chart-cirion-base','bar',{
+    labels:topB.map(([k])=>k),
+    datasets:[{label:'Actividades',data:topB.map(([,v])=>v),backgroundColor:'#4a90d9',borderRadius:6,borderSkipped:false}]
+  },{
+    indexAxis:'y',
+    plugins:{...CHART_DEFAULTS.plugins,legend:{display:false}},
+    scales:{x:{ticks:{color:'#6b7a9a'},grid:{color:'rgba(0,0,0,.06)'}},y:{ticks:{color:'#6b7a9a',font:{size:11}}}}
+  });
+}
+
+// ══════════════════════════════════════════════
+// LIBERTY CHARTS
+// ══════════════════════════════════════════════
+function renderLibertyCharts() {
+  const l = RAW_DATA.filter(r => r.GERENCIA === 'LIBERTY');
+
+  const estL = countBy(l,'ESTADO_ACTIVIDAD');
+  mkChart('chart-liberty-estado','doughnut',{
+    labels:Object.keys(estL),
+    datasets:[{data:Object.values(estL),backgroundColor:['#22c55e','#3b82f6','#f59e0b','#e8334a','#9ca3af'],borderWidth:0,hoverOffset:5}]
+  },{ cutout:'65%', plugins:{...CHART_DEFAULTS.plugins,legend:{...CHART_DEFAULTS.plugins.legend,position:'bottom'}} });
+
+  const tipL = countBy(l,'TIPO_ACTIVIDAD');
+  const topT = topN(tipL,8);
+  mkChart('chart-liberty-tipo','bar',{
+    labels:topT.map(([k])=>k.length>20?k.substring(0,20)+'…':k),
+    datasets:[{label:'Actividades',data:topT.map(([,v])=>v),backgroundColor:'#0847a3',borderRadius:6,borderSkipped:false}]
+  },{
+    indexAxis:'y',
+    plugins:{...CHART_DEFAULTS.plugins,legend:{display:false}},
+    scales:{x:{ticks:{color:'#6b7a9a'},grid:{color:'rgba(0,0,0,.06)'}},y:{ticks:{color:'#6b7a9a',font:{size:11}}}}
+  });
+
+  const mL = byMonth(l);
+  const monthsL = Object.keys(mL).sort();
+  mkChart('chart-liberty-mensual','line',{
+    labels:monthsL,
+    datasets:[{
+      label:'Actividades Liberty',
+      data:monthsL.map(k=>mL[k]),
+      borderColor:'#0847a3',backgroundColor:'#0847a322',
+      borderWidth:2,fill:true,tension:.4,pointRadius:3
+    }]
+  },{
+    plugins:{...CHART_DEFAULTS.plugins,legend:{display:false}},
+    scales:{
+      y:{ticks:{color:'#6b7a9a'},grid:{color:'rgba(0,0,0,.06)'}},
+      x:{ticks:{color:'#6b7a9a',maxTicksLimit:10},grid:{display:false}}
+    }
+  });
+
+  const ciudadL = countBy(l,'CIUDAD');
+  const topCL = topN(ciudadL,8);
+  mkChart('chart-liberty-ciudad','bar',{
+    labels:topCL.map(([k])=>k),
+    datasets:[{label:'Actividades',data:topCL.map(([,v])=>v),backgroundColor:'#C5D336',borderRadius:6,borderSkipped:false}]
+  },{
+    indexAxis:'y',
+    plugins:{...CHART_DEFAULTS.plugins,legend:{display:false}},
+    scales:{x:{ticks:{color:'#6b7a9a'},grid:{color:'rgba(0,0,0,.06)'}},y:{ticks:{color:'#6b7a9a',font:{size:11}}}}
+  });
+}
+
+// ══════════════════════════════════════════════
+// BANCA CHARTS
+// ══════════════════════════════════════════════
+function renderBancaCharts() {
+  const b = RAW_DATA.filter(r => r.GERENCIA === 'BANCA');
+
+  const estB = countBy(b,'ESTADO_ACTIVIDAD');
+  mkChart('chart-banca-estado','doughnut',{
+    labels:Object.keys(estB),
+    datasets:[{data:Object.values(estB),backgroundColor:['#22c55e','#3b82f6','#f59e0b','#e8334a','#9ca3af'],borderWidth:0,hoverOffset:5}]
+  },{ cutout:'65%', plugins:{...CHART_DEFAULTS.plugins,legend:{...CHART_DEFAULTS.plugins.legend,position:'bottom'}} });
+
+  const formaB = countBy(b,'FORMA_ATENCION');
+  const validForma = Object.fromEntries(Object.entries(formaB).filter(([k])=>k!=='NO APLICA'));
+  mkChart('chart-banca-forma','doughnut',{
+    labels:Object.keys(validForma),
+    datasets:[{data:Object.values(validForma),backgroundColor:['#166534','#22c55e','#4ade80'],borderWidth:0,hoverOffset:5}]
+  },{ cutout:'65%', plugins:{...CHART_DEFAULTS.plugins,legend:{...CHART_DEFAULTS.plugins.legend,position:'bottom'}} });
+
+  const negB = countBy(b,'TIPO_NEGOCIO');
+  const topNB = topN(negB,6);
+  mkChart('chart-banca-negocio','bar',{
+    labels:topNB.map(([k])=>k),
+    datasets:[{label:'Actividades',data:topNB.map(([,v])=>v),backgroundColor:'#166534',borderRadius:6,borderSkipped:false}]
+  },{
+    indexAxis:'y',
+    plugins:{...CHART_DEFAULTS.plugins,legend:{display:false}},
+    scales:{x:{ticks:{color:'#6b7a9a'},grid:{color:'rgba(0,0,0,.06)'}},y:{ticks:{color:'#6b7a9a',font:{size:11}}}}
+  });
+
+  const mB = byMonthValue(b,'VALOR_TOTAL');
+  const monthsB = Object.keys(mB).sort();
+  mkChart('chart-banca-mensual','bar',{
+    labels:monthsB,
+    datasets:[{label:'Valor Total (COP)',data:monthsB.map(k=>mB[k]),backgroundColor:'#166534',borderRadius:6,borderSkipped:false}]
+  },{
+    plugins:{...CHART_DEFAULTS.plugins,legend:{display:false}},
+    scales:{
+      y:{ticks:{color:'#6b7a9a',callback:v=>fmtCOP(v)},grid:{color:'rgba(0,0,0,.06)'}},
+      x:{ticks:{color:'#6b7a9a'},grid:{display:false}}
+    }
+  });
+
+  const redB = countBy(b,'RED_ASOCIADA');
+  const validRed = Object.fromEntries(Object.entries(redB).filter(([k])=>k!=='NO APLICA'));
+  const topR = topN(validRed,8);
+  mkChart('chart-banca-red','bar',{
+    labels:topR.map(([k])=>k.length>18?k.substring(0,18)+'…':k),
+    datasets:[{label:'Actividades',data:topR.map(([,v])=>v),backgroundColor:'#C5D336',borderRadius:6,borderSkipped:false}]
+  },{
+    indexAxis:'y',
+    plugins:{...CHART_DEFAULTS.plugins,legend:{display:false}},
+    scales:{x:{ticks:{color:'#6b7a9a'},grid:{color:'rgba(0,0,0,.06)'}},y:{ticks:{color:'#6b7a9a',font:{size:11}}}}
+  });
+}
+
+// ══════════════════════════════════════════════
+// TABLE
+// ══════════════════════════════════════════════
+const TABLE_COLS = [
+  { label:'ID',         key:'ID_TA' },
+  { label:'Gerencia',   key:'GERENCIA',           type:'gerencia' },
+  { label:'Tipo Act.',  key:'TIPO_ACTIVIDAD' },
+  { label:'Estado',     key:'ESTADO_ACTIVIDAD',   type:'status' },
+  { label:'Fecha',      key:'FECHA_FINALIZACION' },
+  { label:'Valor Total',key:'VALOR_TOTAL',         type:'currency' },
+  { label:'Coordinador',key:'COORDINADOR' },
+  { label:'Ciudad',     key:'CIUDAD' },
+  { label:'Zona',       key:'ZONA' },
+  { label:'Lugar',      key:'LUGAR_EJECUCION' },
+];
+
+function setTableFilter(f) {
+  _tableFilter = f;
+  _tablePage = 1;
+  document.querySelectorAll('[id^="tt-"]').forEach(b => b.classList.remove('active'));
+  const key = f === 'todos' ? 'tt-todos' : 'tt-' + f.toLowerCase();
+  const el = document.getElementById(key);
+  if (el) el.classList.add('active');
+  renderTable();
+}
+
+function resetTableFilters() {
+  _tableSearch = ''; _tableEstado = ''; _tableDesdeDt = ''; _tableHastaDt = '';
+  const s = document.getElementById('tabla-search'); if(s) s.value='';
+  const e = document.getElementById('tabla-estado'); if(e) e.value='';
+  const d = document.getElementById('tabla-desde'); if(d) d.value='';
+  const h = document.getElementById('tabla-hasta'); if(h) h.value='';
+  _tablePage = 1;
+  renderTable();
+}
+
+function renderTable() {
+  _tableSearch  = (document.getElementById('tabla-search')?.value||'').toLowerCase();
+  _tableEstado  = document.getElementById('tabla-estado')?.value || '';
+  _tableDesdeDt = document.getElementById('tabla-desde')?.value || '';
+  _tableHastaDt = document.getElementById('tabla-hasta')?.value || '';
+
+  let rows = _tableFilter === 'todos' ? RAW_DATA : RAW_DATA.filter(r => r.GERENCIA === _tableFilter);
+
+  if (_tableSearch) {
+    rows = rows.filter(r =>
+      TABLE_COLS.some(c => String(r[c.key]||'').toLowerCase().includes(_tableSearch))
+    );
+  }
+  if (_tableEstado) rows = rows.filter(r => r.ESTADO_ACTIVIDAD === _tableEstado);
+  if (_tableDesdeDt) rows = rows.filter(r => (r.FECHA_FINALIZACION||'') >= _tableDesdeDt);
+  if (_tableHastaDt) rows = rows.filter(r => (r.FECHA_FINALIZACION||'') <= _tableHastaDt);
+
+  const total = rows.length;
+  const pages = Math.max(1, Math.ceil(total / TABLE_SIZE));
+  if (_tablePage > pages) _tablePage = pages;
+  const slice = rows.slice((_tablePage-1)*TABLE_SIZE, _tablePage*TABLE_SIZE);
+
+  const tbl = document.getElementById('main-table');
+  if (!tbl) return;
+
+  if (!slice.length) {
+    tbl.innerHTML = `<tbody><tr><td colspan="${TABLE_COLS.length}" style="text-align:center;padding:60px;color:var(--gris-text)">Sin registros para los filtros seleccionados</td></tr></tbody>`;
+    document.getElementById('table-count').textContent = '0 registros';
+    document.getElementById('table-pagination').innerHTML = '';
+    return;
+  }
+
+  tbl.innerHTML = `
+    <thead><tr>
+      ${TABLE_COLS.map(c=>`<th>${c.label}</th>`).join('')}
+    </tr></thead>
+    <tbody>
+      ${slice.map((r,i) => `<tr style="background:${i%2===0?'':'rgba(0,29,98,.015)'}">
+        ${TABLE_COLS.map(c => {
+          const v = String(r[c.key]||'—');
+          if (c.type === 'gerencia') return `<td><span class="gerencia-badge ${gerenciaClass(v)}">${v}</span></td>`;
+          if (c.type === 'status')   return `<td><span class="status-pill ${statusClass(v)}">${v}</span></td>`;
+          if (c.type === 'currency') return `<td class="val-currency">${parseFloat(r[c.key]||0).toLocaleString('es-CO',{minimumFractionDigits:0})}</td>`;
+          return `<td title="${v}">${v}</td>`;
+        }).join('')}
+      </tr>`).join('')}
+    </tbody>`;
+
+  document.getElementById('table-count').textContent = `${total.toLocaleString()} registros · pág ${_tablePage}/${pages}`;
+
+  // Pagination
+  const pg = document.getElementById('table-pagination');
+  const btns = [];
+  btns.push(`<button class="pg-btn" onclick="goTablePage(${_tablePage-1})" ${_tablePage===1?'disabled':''}>‹</button>`);
+  const start = Math.max(1, _tablePage-2);
+  const end   = Math.min(pages, _tablePage+2);
+  if (start > 1) btns.push(`<button class="pg-btn" onclick="goTablePage(1)">1</button>${start>2?'<span style="padding:0 4px;color:#b0bbd6">…</span>':''}`);
+  for (let p = start; p <= end; p++) {
+    btns.push(`<button class="pg-btn ${p===_tablePage?'active':''}" onclick="goTablePage(${p})">${p}</button>`);
+  }
+  if (end < pages) btns.push(`${end<pages-1?'<span style="padding:0 4px;color:#b0bbd6">…</span>':''}<button class="pg-btn" onclick="goTablePage(${pages})">${pages}</button>`);
+  btns.push(`<button class="pg-btn" onclick="goTablePage(${_tablePage+1})" ${_tablePage===pages?'disabled':''}>›</button>`);
+  pg.innerHTML = btns.join('');
+}
+
+function goTablePage(p) {
+  _tablePage = p;
+  renderTable();
+  document.getElementById('tab-tabla').scrollTop = 0;
+}
+
+// ══════════════════════════════════════════════
+// FILE UPLOAD
+// ══════════════════════════════════════════════
+function handleFileDrop(event) {
+  event.preventDefault();
+  document.getElementById('upload-zone').classList.remove('drag-over');
+  const file = event.dataTransfer.files[0];
+  if (file) parseJSONFile(file);
+}
+function handleFileInput(input) {
+  const file = input.files[0];
+  if (file) parseJSONFile(file);
+}
+function parseJSONFile(file) {
+  const status = document.getElementById('upload-status');
+  status.style.display = 'block';
+  status.innerHTML = '⏳ Procesando archivo…';
+  const reader = new FileReader();
+  reader.onload = e => {
+    try {
+      let data = JSON.parse(e.target.result);
+      // Accept array directly or {rows:[...]} or {stdout:...} wrapping
+      if (Array.isArray(data)) { /* ok */ }
+      else if (data.rows && Array.isArray(data.rows)) data = data.rows;
+      else throw new Error('Formato no reconocido. El JSON debe ser un array de registros.');
+      if (!data.length) throw new Error('El archivo no contiene registros.');
+      // Normalize column names to UPPERCASE
+      data = data.map(r => {
+        const n = {};
+        Object.entries(r).forEach(([k,v]) => { n[k.toUpperCase().trim()] = v; });
+        return n;
+      });
+      loadData(data);
+      status.innerHTML = `✅ <strong>${data.length.toLocaleString()} registros</strong> cargados correctamente.`;
+      status.style.color = '#166534';
+      setTimeout(() => showTab('resumen'), 800);
+    } catch(err) {
+      status.innerHTML = `❌ Error: ${err.message}`;
+      status.style.color = '#e8334a';
+    }
+  };
+  reader.readAsText(file);
+}
+
+// ══════════════════════════════════════════════
+// EXPORT
+// ══════════════════════════════════════════════
+function exportData(tipo) {
+  let data;
+  if (tipo === 'consolidado' || tipo === 'tabla') data = RAW_DATA;
+  else if (tipo === 'cirion')  data = RAW_DATA.filter(r => r.GERENCIA === 'CIRION');
+  else if (tipo === 'liberty') data = RAW_DATA.filter(r => r.GERENCIA === 'LIBERTY');
+  else if (tipo === 'banca')   data = RAW_DATA.filter(r => r.GERENCIA === 'BANCA');
+  else data = RAW_DATA;
+
+  if (!data.length) { alert('Sin datos para exportar.'); return; }
+
+  const wb = XLSX.utils.book_new();
+  const ws = XLSX.utils.json_to_sheet(data);
+  const cols = Object.keys(data[0]||{});
+  ws['!cols'] = cols.map(k => ({ wch: Math.max(k.length+2, ...data.slice(0,40).map(r=>String(r[k]||'').length)) }));
+  XLSX.utils.book_append_sheet(wb, ws, 'Producción');
+  XLSX.writeFile(wb, `Produccion_${tipo}_${new Date().toISOString().slice(0,10)}.xlsx`);
+}
+</script>
+</body>
+</html>
