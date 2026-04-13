@@ -22,11 +22,11 @@
   --lima-dark:   #9eaa25;
   --lima-glow:   rgba(197,211,54,.25);
   --blanco:      #FFFFFF;
-  --gris-bg:     #f0f2f7;
-  --gris-card:   #FFFFFF;
-  --gris-border: #dde3f0;
-  --gris-text:   #6b7a9a;
-  --gris-dark:   #2d3a5a;
+  --gris-bg:     #0a1628;
+  --gris-card:   #0f1f3d;
+  --gris-border: #1e3460;
+  --gris-text:   #8a9ec5;
+  --gris-dark:   #d4def5;
   --danger:      #e8334a;
   --warning:     #f59e0b;
   --success:     #22c55e;
@@ -42,7 +42,7 @@ html { scroll-behavior: smooth; -webkit-font-smoothing: antialiased; }
 
 body {
   font-family: 'Outfit', sans-serif;
-  background: var(--gris-bg);
+  background: #071324;
   color: var(--gris-dark);
   min-height: 100vh;
   overflow-x: hidden;
@@ -203,15 +203,6 @@ body {
 .btn-ms:active { transform: scale(.98); }
 .btn-ms:disabled { opacity: .6; cursor: not-allowed; transform: none; }
 
-/* Demo login */
-.btn-demo {
-  width: 100%; padding: 12px;
-  background: transparent; border: 1.5px solid var(--gris-border);
-  border-radius: var(--radius-sm); color: var(--gris-text);
-  font-family: 'Outfit', sans-serif; font-size: 13px; font-weight: 500;
-  cursor: pointer; transition: var(--transition);
-}
-.btn-demo:hover { border-color: var(--lima); color: var(--gris-dark); background: rgba(197,211,54,.05); }
 
 .login-footer {
   margin-top: 28px; text-align: center;
@@ -289,7 +280,7 @@ body {
 /* ── SIDEBAR ── */
 .sidebar {
   width: 230px; flex-shrink: 0;
-  background: #fff;
+  background: #0f1f3d;
   border-right: 1px solid var(--gris-border);
   display: flex; flex-direction: column;
   min-height: calc(100vh - 64px);
@@ -373,7 +364,7 @@ body {
 
 /* ── FILTERS BAR ── */
 .filters-bar {
-  background: #fff; border: 1px solid var(--gris-border);
+  background: #0f1f3d; border: 1px solid var(--gris-border);
   border-radius: var(--radius); padding: 18px 20px;
   margin-bottom: 24px;
   box-shadow: var(--shadow);
@@ -387,7 +378,7 @@ body {
 .filter-group { display: flex; flex-direction: column; gap: 5px; }
 .filter-group label { font-size: 10px; font-weight: 700; color: var(--gris-text); text-transform: uppercase; letter-spacing: .8px; }
 .filter-group select, .filter-group input {
-  padding: 9px 12px; background: var(--gris-bg);
+  padding: 9px 12px; background: #071324;
   border: 1.5px solid var(--gris-border); border-radius: var(--radius-sm);
   font-family: 'Outfit', sans-serif; font-size: 13px; color: var(--gris-dark);
   outline: none; transition: var(--transition); min-width: 140px;
@@ -455,7 +446,7 @@ body {
   font-size: 28px; opacity: .12;
 }
 .kpi-bar {
-  margin-top: 10px; height: 4px; background: var(--gris-bg);
+  margin-top: 10px; height: 4px; background: #071324;
   border-radius: 2px; overflow: hidden;
 }
 .kpi-bar-fill {
@@ -520,20 +511,20 @@ body {
   font-size: 12px;
 }
 .data-table th {
-  background: #f5f7fb; color: var(--gris-text);
+  background: #071324; color: var(--gris-text);
   font-size: 10px; font-weight: 700; text-transform: uppercase;
   letter-spacing: .8px; padding: 10px 12px;
   text-align: left; border-bottom: 2px solid var(--gris-border);
   position: sticky; top: 0; z-index: 1; cursor: pointer;
   white-space: nowrap;
 }
-.data-table th:hover { background: #edf0f9; color: var(--azul); }
+.data-table th:hover { background: #0a1a30; color: var(--azul); }
 .data-table td {
   padding: 9px 12px; border-bottom: 1px solid #f0f2f7;
   color: var(--gris-dark); max-width: 200px;
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
-.data-table tr:hover td { background: rgba(0,29,98,.03); }
+.data-table tr:hover td { background: rgba(197,211,54,.06); }
 .table-footer {
   display: flex; align-items: center; justify-content: space-between;
   padding: 12px 16px; border-top: 1px solid var(--gris-border);
@@ -636,7 +627,7 @@ body {
   border: 2px dashed var(--gris-border);
   border-radius: var(--radius); padding: 40px 20px;
   text-align: center; cursor: pointer; transition: var(--transition);
-  background: #fff;
+  background: #071324;
 }
 .upload-zone:hover, .upload-zone.drag-over {
   border-color: var(--azul); background: rgba(0,29,98,.03);
@@ -697,10 +688,6 @@ body {
       </svg>
       Iniciar sesión con Microsoft 365
     </button>
-
-    <div class="divider-or"><span>o acceso demo</span></div>
-
-    <button class="btn-demo" onclick="doDemo()">🔍 Ver demo (sin autenticación)</button>
 
     <div class="login-footer">
       Solo cuentas @lineacom.co · Sesión de 1 hora<br>
@@ -1027,40 +1014,53 @@ body {
         </div>
       </div>
 
-      <!-- ══ TAB: CARGAR JSON ══ -->
+      <!-- ══ TAB: DATOS ══ -->
       <div id="tab-carga" class="tab-panel">
         <div class="page-header fade-up">
           <div>
-            <div class="page-title">Cargar Datos JSON</div>
-            <div class="page-sub">Sube el archivo consolidado.json generado por el script Python</div>
+            <div class="page-title">Fuente de Datos</div>
+            <div class="page-sub">Los datos se cargan automáticamente desde <code style="font-family:'DM Mono',monospace;background:rgba(197,211,54,.12);padding:2px 8px;border-radius:4px;font-size:12px;color:var(--lima)">consolidado.json.gz</code></div>
+          </div>
+          <div class="page-actions">
+            <button class="btn-export" onclick="loadConsolidadoGz()">↻ Recargar datos</button>
           </div>
         </div>
 
-        <div class="chart-card fade-up fade-up-1" style="padding:32px">
-          <div
-            class="upload-zone" id="upload-zone"
-            onclick="document.getElementById('file-input').click()"
-            ondragover="event.preventDefault();this.classList.add('drag-over')"
-            ondragleave="this.classList.remove('drag-over')"
-            ondrop="handleFileDrop(event)"
-          >
-            <div class="icon">📄</div>
-            <p>Haz clic o arrastra aquí tu archivo <strong>consolidado.json</strong></p>
-            <small>Generado por el script consolidado_produccion.py · formato records</small>
+        <div class="chart-card fade-up fade-up-1" style="padding:28px">
+          <div class="chart-title" style="margin-bottom:16px">⚙️ Cómo actualizar los datos</div>
+          <div style="display:flex;flex-direction:column;gap:16px">
+            <div style="display:flex;align-items:flex-start;gap:14px;padding:16px;background:rgba(197,211,54,.06);border-radius:var(--radius-sm);border:1px solid rgba(197,211,54,.15)">
+              <div style="font-size:22px;flex-shrink:0">1️⃣</div>
+              <div>
+                <div style="font-weight:700;color:var(--lima);margin-bottom:4px">Ejecutar script de producción</div>
+                <div style="font-size:13px;color:var(--gris-text)">Correr <code style="font-family:'DM Mono',monospace;font-size:11px;background:rgba(0,0,0,.2);padding:2px 6px;border-radius:4px">consolidado_produccion.py</code> para generar el archivo <code style="font-family:'DM Mono',monospace;font-size:11px;background:rgba(0,0,0,.2);padding:2px 6px;border-radius:4px">consolidado.json</code></div>
+              </div>
+            </div>
+            <div style="display:flex;align-items:flex-start;gap:14px;padding:16px;background:rgba(197,211,54,.06);border-radius:var(--radius-sm);border:1px solid rgba(197,211,54,.15)">
+              <div style="font-size:22px;flex-shrink:0">2️⃣</div>
+              <div>
+                <div style="font-weight:700;color:var(--lima);margin-bottom:4px">Comprimir el JSON</div>
+                <div style="font-size:13px;color:var(--gris-text)">Ejecutar <code style="font-family:'DM Mono',monospace;font-size:11px;background:rgba(0,0,0,.2);padding:2px 6px;border-radius:4px">python comprimir_consolidado.py</code> para generar <code style="font-family:'DM Mono',monospace;font-size:11px;background:rgba(0,0,0,.2);padding:2px 6px;border-radius:4px">consolidado.json.gz</code></div>
+              </div>
+            </div>
+            <div style="display:flex;align-items:flex-start;gap:14px;padding:16px;background:rgba(197,211,54,.06);border-radius:var(--radius-sm);border:1px solid rgba(197,211,54,.15)">
+              <div style="font-size:22px;flex-shrink:0">3️⃣</div>
+              <div>
+                <div style="font-weight:700;color:var(--lima);margin-bottom:4px">Publicar el archivo .gz</div>
+                <div style="font-size:13px;color:var(--gris-text)">Subir <code style="font-family:'DM Mono',monospace;font-size:11px;background:rgba(0,0,0,.2);padding:2px 6px;border-radius:4px">consolidado.json.gz</code> a la raíz del servidor junto con <code style="font-family:'DM Mono',monospace;font-size:11px;background:rgba(0,0,0,.2);padding:2px 6px;border-radius:4px">index.html</code>. El archivo <code style="font-family:'DM Mono',monospace;font-size:11px;background:rgba(0,0,0,.2);padding:2px 6px;border-radius:4px">consolidado.json</code> debe permanecer en <code style="font-family:'DM Mono',monospace;font-size:11px;background:rgba(0,0,0,.2);padding:2px 6px;border-radius:4px">.gitignore</code></div>
+              </div>
+            </div>
           </div>
-          <input type="file" id="file-input" accept=".json" style="display:none" onchange="handleFileInput(this)">
-
-          <div id="upload-status" style="margin-top:16px;font-size:13px;color:var(--gris-text);display:none"></div>
         </div>
 
         <div class="chart-card fade-up fade-up-2" style="padding:24px;margin-top:16px">
-          <div class="chart-title" style="margin-bottom:12px">📋 Estructura esperada del JSON</div>
-          <p style="font-size:13px;color:var(--gris-text);margin-bottom:12px">El script Python genera un array de registros con estas columnas clave:</p>
-          <div style="background:#f5f7fb;border-radius:10px;padding:16px;font-family:'DM Mono',monospace;font-size:12px;color:#2d3a5a;line-height:1.8;overflow-x:auto">
-            <strong style="color:var(--azul)">Comunes:</strong> ID_TA · ID_FO · TIPO_ACTIVIDAD · ESTADO_ACTIVIDAD · FECHA_FINALIZACION · VALOR_TOTAL · GERENCIA<br>
-            <strong style="color:#0847a3">Cirion:</strong> VALOR_OBRA_CIVIL · VALOR_MATERIAL · VALOR_ADICIONAL · TIPO_NEGOCIO · ZONA · BASE_OPERATIVA · ITEM_FACTURACION<br>
-            <strong style="color:#166534">Banca:</strong> VALOR_ENTIDAD · VALOR_RED · FORMA_ATENCION · TIPOLOGIA · TECNICO · RED_ASOCIADA · GERENCIA<br>
-            <strong style="color:#854d0e">Liberty:</strong> VALOR_APROBADO · VALOR_OBRA_CIVIL · COORDINADOR · CIUDAD · CENTRO_DE_COSTOS · BASE_OPERATIVA
+          <div class="chart-title" style="margin-bottom:12px">📋 Estructura del JSON consolidado</div>
+          <p style="font-size:13px;color:var(--gris-text);margin-bottom:12px">El script Python genera un array de registros con estas columnas:</p>
+          <div style="background:#071324;border-radius:10px;padding:16px;font-family:'DM Mono',monospace;font-size:12px;color:#d4def5;line-height:1.8;overflow-x:auto;border:1px solid var(--gris-border)">
+            <strong style="color:var(--lima)">Comunes:</strong> ID_TA · ID_FO · TIPO_ACTIVIDAD · ESTADO_ACTIVIDAD · FECHA_FINALIZACION · VALOR_TOTAL · GERENCIA<br>
+            <strong style="color:#4a90d9">Cirion:</strong> VALOR_OBRA_CIVIL · VALOR_MATERIAL · VALOR_ADICIONAL · TIPO_NEGOCIO · ZONA · BASE_OPERATIVA · ITEM_FACTURACION<br>
+            <strong style="color:#22c55e">Banca:</strong> VALOR_ENTIDAD · VALOR_RED · FORMA_ATENCION · TIPOLOGIA · TECNICO · RED_ASOCIADA<br>
+            <strong style="color:#f59e0b">Liberty:</strong> VALOR_APROBADO · VALOR_OBRA_CIVIL · COORDINADOR · CIUDAD · CENTRO_DE_COSTOS · BASE_OPERATIVA
           </div>
         </div>
       </div>
@@ -1169,10 +1169,7 @@ async function doMicrosoftLogin() {
   }
 }
 
-function doDemo() {
-  window._msUserProfile = { nombre: 'Usuario Demo', cargo: 'Vista de Demostración', email: 'demo@lineacom.co', foto: null };
-  _enterApp();
-}
+// Demo mode removed — solo autenticación Microsoft 365
 
 function _enterApp() {
   const p = window._msUserProfile || {};
@@ -1282,67 +1279,87 @@ function showTab(name) {
 // ══════════════════════════════════════════════
 // INIT
 // ══════════════════════════════════════════════
+// ══════════════════════════════════════════════
+// LOAD consolidado.json.gz AUTOMÁTICAMENTE
+// ══════════════════════════════════════════════
 function initDashboard() {
-  loadDemoData(); // loads sample data; replaced when user uploads JSON
+  loadConsolidadoGz();
 }
 
-function loadDemoData() {
-  // Rich demo data matching the Python script output schema
-  const gerencias = ['CIRION','CIRION','CIRION','LIBERTY','LIBERTY','BANCA','BANCA'];
-  const estados   = ['FINALIZADO','EN EJECUCIÓN','PENDIENTE','CANCELADO','FINALIZADO'];
-  const tipos     = ['MANTENIMIENTO RED','INSTALACIÓN FIBRA','REVISIÓN NODO','ACTUALIZACIÓN SW','SOPORTE TÉCNICO','INSPECCIÓN','VISITA COMERCIAL','PRUEBA ACEPTACIÓN'];
-  const zonas     = ['ZONA NORTE','ZONA SUR','ZONA CENTRO','ZONA ORIENTE','ZONA OCCIDENTE'];
-  const bases     = ['BOGOTÁ','MEDELLÍN','CALI','BARRANQUILLA','BUCARAMANGA','PEREIRA','CARTAGENA'];
-  const coords    = ['Carlos García','Andrea Torres','Luis Martínez','María López','Juan Rodríguez','Pedro Sánchez','Ana Gómez','Felipe Vargas'];
-  const redes     = ['BANCOLOMBIA','DAVIVIENDA','BANCO DE BOGOTÁ','BBVA','COLPATRIA','AV VILLAS'];
-  const formas    = ['PRESENCIAL','REMOTA','MIXTA'];
-  const negocios  = ['FTTH','CORPORATIVO','PYME','GOBIERNO','RESIDENCIAL'];
-  const items     = ['IT-001','IT-002','IT-003','IT-004','IT-005'];
+async function loadConsolidadoGz() {
+  const GZ_URL = './consolidado.json.gz';
+  const band = document.getElementById('summary-band');
+  if (band) band.innerHTML = `<div class="loading-state"><div class="spinner"></div><span>Cargando datos de producción…</span></div>`;
 
-  const data = [];
-  let seed = 42;
-  function rng() { seed = (seed * 1664525 + 1013904223) & 0xffffffff; return (seed >>> 0) / 0xffffffff; }
-  function pick(arr) { return arr[Math.floor(rng() * arr.length)]; }
-  function rndDate(monthOffset = 0) {
-    const d = new Date(2025, 0 + Math.floor(rng() * 12) + monthOffset, 1 + Math.floor(rng() * 28));
-    return d.toISOString().split('T')[0];
+  try {
+    // Fetch del archivo comprimido
+    const resp = await fetch(GZ_URL, { cache: 'no-cache' });
+    if (!resp.ok) throw new Error(`HTTP ${resp.status} al leer ${GZ_URL}`);
+
+    const compressed = await resp.arrayBuffer();
+
+    // Descomprimir con DecompressionStream (nativo en Chrome/Edge/Firefox modernos)
+    let jsonText;
+    if (typeof DecompressionStream !== 'undefined') {
+      const ds = new DecompressionStream('gzip');
+      const writer = ds.writable.getWriter();
+      writer.write(new Uint8Array(compressed));
+      writer.close();
+      const chunks = [];
+      const reader = ds.readable.getReader();
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        chunks.push(value);
+      }
+      const totalLength = chunks.reduce((s, c) => s + c.length, 0);
+      const merged = new Uint8Array(totalLength);
+      let offset = 0;
+      for (const chunk of chunks) { merged.set(chunk, offset); offset += chunk.length; }
+      jsonText = new TextDecoder().decode(merged);
+    } else {
+      // Fallback: pako si DecompressionStream no está disponible
+      if (!window.pako) {
+        await new Promise((res, rej) => {
+          const s = document.createElement('script');
+          s.src = 'https://cdnjs.cloudflare.com/ajax/libs/pako/2.1.0/pako.min.js';
+          s.onload = res; s.onerror = rej;
+          document.head.appendChild(s);
+        });
+      }
+      jsonText = window.pako.inflate(new Uint8Array(compressed), { to: 'string' });
+    }
+
+    let data = JSON.parse(jsonText);
+    if (!Array.isArray(data)) {
+      if (data.rows && Array.isArray(data.rows)) data = data.rows;
+      else throw new Error('Formato JSON no reconocido. Se esperaba un array de registros.');
+    }
+    if (!data.length) throw new Error('El archivo consolidado.json.gz no contiene registros.');
+
+    // Normalizar columnas a MAYÚSCULAS
+    data = data.map(r => {
+      const n = {};
+      Object.entries(r).forEach(([k, v]) => { n[k.toUpperCase().trim()] = v; });
+      return n;
+    });
+
+    loadData(data);
+
+  } catch (err) {
+    console.error('[loadConsolidadoGz]', err);
+    if (band) band.innerHTML = `
+      <div style="color:#e8334a;padding:20px;font-size:13px;">
+        ⚠ No se pudo cargar consolidado.json.gz: <strong>${err.message}</strong><br>
+        <small style="opacity:.7;display:block;margin-top:6px;">
+          Asegúrate de que el archivo existe en la raíz del servidor junto con index.html.
+          Genera el archivo con: <code>python comprimir_consolidado.py</code>
+        </small>
+      </div>`;
   }
-
-  for (let i = 0; i < 800; i++) {
-    const ger = pick(gerencias);
-    const row = {
-      ID_TA: `TA-${String(10000 + i).padStart(6,'0')}`,
-      ID_FO: `FO-${String(5000 + Math.floor(rng()*3000)).padStart(6,'0')}`,
-      GERENCIA: ger,
-      TIPO_ACTIVIDAD: pick(tipos),
-      ESTADO_ACTIVIDAD: pick(estados),
-      FECHA_FINALIZACION: rndDate(),
-      VALOR_TOTAL: Math.round(rng() * 8000000 + 200000),
-      VALOR_OBRA_CIVIL: Math.round(rng() * 1500000),
-      VALOR_APROBADO: Math.round(rng() * 7000000 + 150000),
-      VALOR_MATERIAL: Math.round(rng() * 1000000),
-      VALOR_ADICIONAL: Math.round(rng() * 500000),
-      VALOR_ENTIDAD: Math.round(rng() * 3000000 + 100000),
-      VALOR_RED: Math.round(rng() * 2000000 + 100000),
-      COORDINADOR: pick(coords),
-      CIUDAD: pick(bases),
-      ZONA: pick(zonas),
-      BASE_OPERATIVA: pick(bases),
-      LUGAR_EJECUCION: `Punto ${Math.floor(rng()*500)+1}`,
-      CENTRO_DE_COSTOS: `CC-${Math.floor(rng()*20+1)}`,
-      TIPO_NEGOCIO: pick(negocios),
-      ITEM_FACTURACION: pick(items),
-      DESCRIPCION_ACTIVIDAD: `Actividad de ${pick(tipos).toLowerCase()} en ${pick(bases)}`,
-      RED_ASOCIADA: ger === 'BANCA' ? pick(redes) : 'NO APLICA',
-      FORMA_ATENCION: ger === 'BANCA' ? pick(formas) : 'NO APLICA',
-      TIPOLOGIA: ger === 'BANCA' ? pick(['TIPO A','TIPO B','TIPO C']) : 'NO APLICA',
-      TECNICO: `Técnico ${Math.floor(rng()*30+1)}`,
-    };
-    data.push(row);
-  }
-
-  loadData(data);
 }
+
+// ── loadDemoData eliminado — se usan datos reales de consolidado.json.gz ──
 
 function loadData(data) {
   RAW_DATA = data;
@@ -1918,7 +1935,7 @@ function renderTable() {
       ${TABLE_COLS.map(c=>`<th>${c.label}</th>`).join('')}
     </tr></thead>
     <tbody>
-      ${slice.map((r,i) => `<tr style="background:${i%2===0?'':'rgba(0,29,98,.015)'}">
+      ${slice.map((r,i) => `<tr style="background:${i%2===0?'':'rgba(197,211,54,.03)'}">
         ${TABLE_COLS.map(c => {
           const v = String(r[c.key]||'—');
           if (c.type === 'gerencia') return `<td><span class="gerencia-badge ${gerenciaClass(v)}">${v}</span></td>`;
