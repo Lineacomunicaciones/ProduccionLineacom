@@ -1,0 +1,174 @@
+import pandas as pd
+
+# =========================
+# 1. CARGAR ARCHIVOS
+# =========================
+
+cirion = r"C:\Users\Andrea\Desktop\python_proyect\cuadro_produ_cirion.xlsx"
+liberty= r"C:\Users\Andrea\Downloads\Actividades (8).csv"
+banca = r"C:\Users\Andrea\Downloads\_select_fl_tarea_as_id_TA_fl_formulario_as_id_FO_act_dlt_tecnico_202604131048.csv"
+
+df_cirion = pd.read_excel(cirion)
+df_liberty = pd.read_csv(liberty)
+df_banca=pd.read_csv(banca)
+
+for df in [df_cirion, df_liberty, df_banca]:
+    df.columns = df.columns.str.upper().str.strip()
+
+# =========================
+# 3. RENOMBRAR COLUMNAS
+# =========================
+
+# LIBERTY
+df_liberty = df_liberty.rename(columns={
+    "ID_ORDEN": "ID_TA",
+    "TIPO_ACT": "TIPO_ACTIVIDAD",
+    "ESTADO_ACT": "ESTADO_ACTIVIDAD",
+    "FECHA_FIN": "FECHA_FINALIZACION",
+    "VALOR_OBRA_CIVIL": "VALOR_OBRA_CIVIL",
+    "VALOR_TOTAL": "VALOR_TOTAL",
+    "VALOR_APROBADO": "VALOR_APROBADO",
+    "COORDINADOR": "COORDINADOR",
+    "CIUDAD_EJE": "CIUDAD",
+    "CENTRO_COSTO": "CENTRO_DE_COSTOS",
+    "DESCRIPCION": "BASE_OPERATIVA",
+    "SUBCLIENTE": "LUGAR_EJECUCION"
+})
+
+# CIRION
+df_cirion = df_cirion.rename(columns={
+    "ID_WO_TT": "ID_TA",
+    "FO": "ID_FO",
+    "TIPO_ACT": "TIPO_ACTIVIDAD",
+    "ESTADO_ACT": "ESTADO_ACTIVIDAD",
+    "FECHA_FIN": "FECHA_FINALIZACION",
+    "OBRA_CIVIL": "VALOR_OBRA_CIVIL",
+    "VALOR_TOTAL_ACT": "VALOR_TOTAL",
+    "VALOR_FIN_APRO": "VALOR_APROBADO",
+    "DES_ACT": "DESCRIPCION_ACTIVIDAD",
+    "SUBCLIENTE": "LUGAR_EJECUCION",
+    "VALOR_MATERIAL": "VALOR_MATERIAL",
+    "COORDINADOR": "COORDINADOR",
+    "CODIGO_CENTROS_DE_COSTOS": "CENTRO_DE_COSTOS",
+    "VALOR_ADICIONAL": "VALOR_ADICIONAL",
+    "ITEM_FACT": "ITEM_FACTURACION",
+    "TIPO_CONTRATO": "TIPO_NEGOCIO",
+    "BASE_OP": "BASE_OPERATIVA",
+    "ZONA": "ZONA"
+})
+
+# BANCA
+df_banca = df_banca.rename(columns={
+    "ID_TA": "ID_TA",
+    "ID_FO_ACT": "ID_FO",
+    "TIPO_FO_ACT": "TIPO_ACTIVIDAD",
+    "ESTADO_TA": "ESTADO_ACTIVIDAD",
+    "VALOR_TOTAL_ENTIDAD": "VALOR_ENTIDAD",
+    "VALOR_TOTAL_RED": "VALOR_RED",
+    "VALOR_ACT": "VALOR_TOTAL",
+    "ZONA_COORDINADOR": "ZONA",
+    "FORMA_ATENCION": "FORMA_ATENCION",
+    "GERENCIA": "GERENCIA",
+    "TIPO_NEGOCIO": "TIPO_NEGOCIO",
+    "FECHA_MES_PROD": "FECHA_FINALIZACION",
+    "RED_ASOCIADA": "RED_ASOCIADA",
+    "DESCRIPCION": "DESCRIPCION_ACTIVIDAD",
+    "TIPOLOGIA": "TIPOLOGIA",
+    "TECNICO": "TECNICO",
+    "NOMBRE_PUNTO": "LUGAR_EJECUCION",
+    "TIPO_FO_ACT": "ITEM_FACTURACION"
+})
+
+# =========================
+# 4. FILTRAR SOLO COLUMNAS RENOMBRADAS (seguro)
+# =========================
+
+def filtrar_columnas(df, columnas):
+    return df[[col for col in columnas if col in df.columns]]
+
+cols_liberty = [
+    "ID_TA","TIPO_ACTIVIDAD","ESTADO_ACTIVIDAD","FECHA_FINALIZACION",
+    "VALOR_OBRA_CIVIL","VALOR_TOTAL","VALOR_APROBADO",
+    "COORDINADOR","CIUDAD","CENTRO_DE_COSTOS",
+    "BASE_OPERATIVA","LUGAR_EJECUCION"
+]
+
+cols_cirion = [
+    "ID_TA","ID_FO","TIPO_ACTIVIDAD","ESTADO_ACTIVIDAD",
+    "FECHA_FINALIZACION","VALOR_OBRA_CIVIL","VALOR_TOTAL",
+    "VALOR_APROBADO","DESCRIPCION_ACTIVIDAD",
+    "LUGAR_EJECUCION","VALOR_MATERIAL","COORDINADOR",
+    "CENTRO_DE_COSTOS","VALOR_ADICIONAL","ITEM_FACTURACION",
+    "TIPO_NEGOCIO","BASE_OPERATIVA","ZONA"
+]
+
+cols_banca = [
+    "ID_TA","ID_FO","TIPO_ACTIVIDAD","ESTADO_ACTIVIDAD",
+    "VALOR_ENTIDAD","VALOR_RED","VALOR_TOTAL","ZONA",
+    "FORMA_ATENCION","GERENCIA","TIPO_NEGOCIO",
+    "FECHA_FINALIZACION","RED_ASOCIADA","DESCRIPCION_ACTIVIDAD",
+    "TIPOLOGIA","TECNICO","LUGAR_EJECUCION","ITEM_FACTURACION"
+]
+
+df_liberty = filtrar_columnas(df_liberty, cols_liberty)
+df_cirion  = filtrar_columnas(df_cirion, cols_cirion)
+df_banca   = filtrar_columnas(df_banca, cols_banca)
+
+df_liberty["GERENCIA"] = "LIBERTY"
+df_cirion["GERENCIA"] = "CIRION"
+
+# =========================
+# 5. CONCATENAR (CONSOLIDADO FINAL)
+# =========================
+
+df_consolidado = pd.concat(
+    [df_cirion, df_liberty, df_banca],
+    ignore_index=True,
+    sort=False
+)
+
+# =========================
+# 6. RESULTADO
+# =========================
+# Columnas de valores
+cols_valores = [
+    "VALOR_TOTAL","VALOR_OBRA_CIVIL","VALOR_APROBADO",
+    "VALOR_MATERIAL","VALOR_ADICIONAL","VALOR_ENTIDAD","VALOR_RED"
+]
+
+# Convertir a numérico
+for col in cols_valores:
+    if col in df_consolidado.columns:
+        df_consolidado[col] = pd.to_numeric(df_consolidado[col], errors="coerce")
+
+# Llenar numéricos con 0
+cols_numericas = [col for col in cols_valores if col in df_consolidado.columns]
+df_consolidado[cols_numericas] = df_consolidado[cols_numericas].fillna(0)
+
+# Fecha
+if "FECHA_FINALIZACION" in df_consolidado.columns:
+    df_consolidado["FECHA_FINALIZACION"] = pd.to_datetime(
+        df_consolidado["FECHA_FINALIZACION"],
+        errors="coerce"
+    ).fillna(pd.Timestamp("1900-01-01"))
+
+# Reemplazar vacíos tipo string
+df_consolidado = df_consolidado.replace("", "NO APLICA")
+
+# Llenar NaN en texto
+cols_texto = df_consolidado.columns.difference(cols_numericas)
+df_consolidado[cols_texto] = df_consolidado[cols_texto].fillna("NO APLICA")
+
+
+
+print(df_consolidado.shape)
+print(df_consolidado.columns)
+df_consolidado.to_json(
+    r"C:\Users\Andrea\Desktop\python_proyect\consolidado.json",
+    orient="records",
+    force_ascii=False,
+    indent=4,
+    date_format="iso"
+)
+
+df_consolidado.to_excel("archivo_unificado.xlsx", index=False)
