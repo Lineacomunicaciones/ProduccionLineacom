@@ -526,8 +526,11 @@ body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--tx);min-he
   </div>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
+
 <script>
 'use strict';
+Chart.register(ChartDataLabels);
 
 // ══════════════════════════════════════════════
 // EMBEDDED BUDGET DATA (from proyeccion.json)
@@ -804,11 +807,43 @@ function renderResumen(){
   });
 
   // Dona distribución
-  const donaProd=GERS.map(g=>sumBy(RAW.filter(r=>r.GERENCIA===g),'VALOR_TOTAL'));
-  mkC('ch-res-dona','doughnut',{
-    labels:GERS,
-    datasets:[{data:donaProd,backgroundColor:GERS.map(g=>GC[g]),borderWidth:0,hoverOffset:6}]
-  },{cutout:'64%',plugins:{...CT.plugins,legend:{...CT.plugins.legend,position:'bottom'}}});
+  const donaProd = GERS.map(g => 
+  sumBy(RAW.filter(r => r.GERENCIA === g), 'VALOR_TOTAL')
+);
+
+mkC('ch-res-dona','doughnut',{
+  labels: GERS,
+  datasets: [{
+    data: donaProd,
+    backgroundColor: GERS.map(g => GC[g]),
+    borderWidth: 0,
+    hoverOffset: 6
+  }]
+},{
+  cutout: '64%',
+  plugins: {
+    ...CT.plugins,
+
+    legend: {
+      ...CT.plugins.legend,
+      position: 'bottom'
+    },
+
+    datalabels: {
+      color: '#fff',
+      font: {
+        weight: 'bold',
+        size: 12
+      },
+      formatter: (value, context) => {
+        const data = context.chart.data.datasets[0].data;
+        const total = data.reduce((a, b) => a + b, 0);
+        const porcentaje = (value / total) * 100;
+        return porcentaje.toFixed(1) + '%';
+      }
+    }
+  }
+});
 }
 
 // ══════════════════════════════════════════════
