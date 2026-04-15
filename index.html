@@ -699,47 +699,61 @@ function initDash(){
   loadDemoData();
 }
 
-async function loadRealData(){
-  try {
-    const [resConsolidado, resProyeccion] = await Promise.all([
-      fetch('consolidado.json'),
-      fetch('proyeccion.json')
-    ]);
+function loadDemoData(){
+  const estados=['FINALIZADO','EN EJECUCIÓN','PENDIENTE','CANCELADO'];
+  const tipos=['MANTENIMIENTO RED','INSTALACIÓN FIBRA','REVISIÓN NODO','ACTUALIZACIÓN SW','SOPORTE TÉCNICO','INSPECCIÓN'];
+  const zonas=['ZONA NORTE','ZONA SUR','ZONA CENTRO','ZONA ORIENTE','ZONA OCCIDENTE'];
+  const bases=['BOGOTÁ','MEDELLÍN','CALI','BARRANQUILLA','BUCARAMANGA','PEREIRA'];
+  const coords=['Carlos García','Andrea Torres','Luis Martínez','María López','Juan Rodríguez'];
+  const redes=['BANCOLOMBIA','DAVIVIENDA','BANCO DE BOGOTÁ','BBVA','COLPATRIA'];
+  const formas=['PRESENCIAL','REMOTA','MIXTA'];
+  const tiposN=['FTTH','CORPORATIVO','PYME','GOBIERNO'];
 
-    const dataConsolidado = await resConsolidado.json();
-    const dataProyeccion = await resProyeccion.json();
+  let seed=42;
+  function rng(){seed=(seed*1664525+1013904223)&0xffffffff;return(seed>>>0)/0xffffffff;}
+  function pick(a){return a[Math.floor(rng()*a.length)];}
 
-    // 🔥 NORMALIZAR CAMPOS (CLAVE)
-    function normalizar(data, tipo){
-      return data.map(r => ({
-        ID_TA: r.ID_TA || r.id || '',
-        GERENCIA: (r.GERENCIA || r.gerencia || '').toUpperCase(),
-        TIPO_ACTIVIDAD: r.TIPO_ACTIVIDAD || r.tipo_actividad || '',
-        ESTADO_ACTIVIDAD: (r.ESTADO_ACTIVIDAD || r.estado || '').toUpperCase(),
-        FECHA_FINALIZACION: r.FECHA_FINALIZACION || r.fecha_finalizacion || '',
-        VALOR_TOTAL: Number(r.VALOR_TOTAL || r.valor_total || 0),
-        VALOR_APROBADO: Number(r.VALOR_APROBADO || r.valor_aprobado || 0),
-        COORDINADOR: r.COORDINADOR || r.coordinador || '',
-        CIUDAD: r.CIUDAD || r.ciudad || '',
-        ZONA: r.ZONA || r.zona || '',
-        BASE_OPERATIVA: r.BASE_OPERATIVA || r.base_operativa || '',
-        TIPO_DATA: tipo
-      }));
-    }
-
-    const consolidado = normalizar(dataConsolidado, 'CONSOLIDADO');
-    const proyeccion = normalizar(dataProyeccion, 'PROYECCION');
-
-    const dataFinal = [...consolidado, ...proyeccion];
-
-    console.log('DATA CARGADA:', dataFinal); // 👈 DEBUG
-
-    loadData(dataFinal);
-
-    
-  } catch (error) {
-    console.error('Error cargando datos:', error);
+  const data=[];
+  for(let i=0;i<600;i++){
+    const ger=pick(['CIRION','CIRION','LIBERTY','BANCA']);
+    const month=Math.floor(rng()*4)+1; // Jan-Apr 2026
+    const day=Math.floor(rng()*28)+1;
+    const d=`2026-${String(month).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
+    data.push({
+      ID_TA:`TA-${String(10000+i).padStart(6,'0')}`,
+      GERENCIA:ger,
+      TIPO_ACTIVIDAD:pick(tipos),
+      ESTADO_ACTIVIDAD:pick(estados),
+      FECHA_FINALIZACION:d,
+      VALOR_TOTAL:Math.round(rng()*5000000+200000),
+      VALOR_APROBADO:Math.round(rng()*4500000+150000),
+      VALOR_OBRA_CIVIL:Math.round(rng()*800000),
+      VALOR_MATERIAL:Math.round(rng()*600000),
+      VALOR_ENTIDAD:Math.round(rng()*2000000+100000),
+      VALOR_RED:Math.round(rng()*1500000+100000),
+      COORDINADOR:pick(coords),
+      CIUDAD:pick(bases),
+      ZONA:pick(zonas),
+      BASE_OPERATIVA:pick(bases),
+      LUGAR_EJECUCION:`Punto ${Math.floor(rng()*300)+1}`,
+      TIPO_NEGOCIO:pick(tiposN),
+      RED_ASOCIADA:ger==='BANCA'?pick(redes):'NO APLICA',
+      FORMA_ATENCION:ger==='BANCA'?pick(formas):'NO APLICA',
+    });
   }
+  loadData(data);
+}
+
+function loadData(data){
+  RAW=data;
+  document.getElementById('lupd').textContent=`Actualizado: ${new Date().toLocaleDateString('es-CO')}`;
+  document.getElementById('sb-rows').textContent=`${RAW.length.toLocaleString()} registros`;
+  document.getElementById('nc-c').textContent=RAW.filter(r=>r.GERENCIA==='CIRION').length;
+  document.getElementById('nc-l').textContent=RAW.filter(r=>r.GERENCIA==='LIBERTY').length;
+  document.getElementById('nc-b').textContent=RAW.filter(r=>r.GERENCIA==='BANCA').length;
+  const estats=[...new Set(RAW.map(r=>r.ESTADO_ACTIVIDAD).filter(Boolean))].sort();
+  const se=document.getElementById('det-est');if(se)se.innerHTML='<option value="">Todos</option>'+estats.map(e=>`<option>${e}</option>`).join('');
+  renderResumen();
 }
 
 // ══════════════════════════════════════════════
