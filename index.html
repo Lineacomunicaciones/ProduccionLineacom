@@ -706,30 +706,37 @@ async function loadRealData(){
       fetch('proyeccion.json')
     ]);
 
-    if (!resConsolidado.ok || !resProyeccion.ok) {
-      throw new Error('Error cargando uno de los JSON');
-    }
-
     const dataConsolidado = await resConsolidado.json();
     const dataProyeccion = await resProyeccion.json();
 
-    // 🔹 Agregar columna para diferenciar origen
-    const consolidado = dataConsolidado.map(r => ({
-      ...r,
-      TIPO_DATA: 'CONSOLIDADO'
-    }));
+    // 🔥 NORMALIZAR CAMPOS (CLAVE)
+    function normalizar(data, tipo){
+      return data.map(r => ({
+        ID_TA: r.ID_TA || r.id || '',
+        GERENCIA: (r.GERENCIA || r.gerencia || '').toUpperCase(),
+        TIPO_ACTIVIDAD: r.TIPO_ACTIVIDAD || r.tipo_actividad || '',
+        ESTADO_ACTIVIDAD: (r.ESTADO_ACTIVIDAD || r.estado || '').toUpperCase(),
+        FECHA_FINALIZACION: r.FECHA_FINALIZACION || r.fecha_finalizacion || '',
+        VALOR_TOTAL: Number(r.VALOR_TOTAL || r.valor_total || 0),
+        VALOR_APROBADO: Number(r.VALOR_APROBADO || r.valor_aprobado || 0),
+        COORDINADOR: r.COORDINADOR || r.coordinador || '',
+        CIUDAD: r.CIUDAD || r.ciudad || '',
+        ZONA: r.ZONA || r.zona || '',
+        BASE_OPERATIVA: r.BASE_OPERATIVA || r.base_operativa || '',
+        TIPO_DATA: tipo
+      }));
+    }
 
-    const proyeccion = dataProyeccion.map(r => ({
-      ...r,
-      TIPO_DATA: 'PROYECCION'
-    }));
+    const consolidado = normalizar(dataConsolidado, 'CONSOLIDADO');
+    const proyeccion = normalizar(dataProyeccion, 'PROYECCION');
 
-    // 🔹 Unir ambos datasets
     const dataFinal = [...consolidado, ...proyeccion];
 
-    // 🔹 Cargar al sistema
+    console.log('DATA CARGADA:', dataFinal); // 👈 DEBUG
+
     loadData(dataFinal);
 
+    
   } catch (error) {
     console.error('Error cargando datos:', error);
   }
