@@ -10,7 +10,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <style>
 :root{
-  --azul:#001D62;--azul2:#002b8f;--azul3:#22c55e;
+  --azul:#001D62;--azul2:#002b8f;--azul3:#0036b0;
   --lima:#C5D336;--lima2:#9eaa25;--lima3:rgba(197,211,54,.15);
   --bg:#eef1f8;--white:#fff;--border:#dde3f0;
   --tx:#1e2d52;--txm:#5c6b8a;--txl:#99a6c0;
@@ -143,7 +143,7 @@ body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--tx);min-he
 /* ── GRIDS ── */
 .g2{display:grid;gap:14px;margin-bottom:20px}.g3{display:grid;gap:14px;margin-bottom:20px}
 .g2{grid-template-columns:repeat(2,1fr)}.g3{grid-template-columns:repeat(3,1fr)}
-.g12{grid-template-columns:1.5fr 1fr}.g21{grid-template-columns:2fr 1fr}
+.g12{grid-template-columns:1.5fr 1fr}.g21{display: grid;grid-template-columns:2fr 1fr}
 @media(max-width:960px){.g2,.g3,.g12,.g21{grid-template-columns:1fr!important}}
 
 /* ── CUMPL GAUGE ── */
@@ -319,6 +319,7 @@ body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--tx);min-he
         <div class="g3 fu fu3" id="res-cump-blocks"></div>
         <div class="slbl fu fu4">Tendencia Mensual 2026</div>
         <div class="g21 fu fu4">
+        
           <div class="card"><div class="ch"><div><div class="ct">Producción vs Meta — Todos los meses</div><div class="cs">Ejecución real vs presupuesto mensual por proyecto</div></div></div><div class="cw" style="height:280px"><canvas id="ch-res-tend"></canvas></div></div>
           <div class="card"><div class="ch"><div><div class="ct">Distribución por Proyecto</div><div class="cs">% sobre producción total acumulada</div></div></div><div class="cw" style="height:280px"><canvas id="ch-res-dona"></canvas></div></div>
         <div class="slbl fu fu2">KPIs de Producción</div>
